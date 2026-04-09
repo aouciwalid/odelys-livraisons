@@ -477,8 +477,31 @@ function nid(){return "CMD-"+(++N).toString().padStart(4,"0");}
 function ini(n){return n.split(" ").slice(0,2).map(function(w){return w[0]||"";}).join("").toUpperCase();}
 function lcolor(id){var i=LV.findIndex(function(l){return l.id===id;});return DC[i<0?0:i%DC.length];}
 function lname(id){var l=LV.find(function(l){return l.id===id;});return l?l.n:"?";}
-function capUsed(lid){return CMDS.filter(function(c){return c.lid===lid&&c.dc===td()&&c.s!="Annulee";}).reduce(function(s,c){return s+(+c.q||0);},0);}
-function livCmds(lid){return CMDS.filter(function(c){return c.lid===lid&&c.dc===td()&&c.s!="Annulee";});}
+function capUsed(lid){return livCmds(lid).reduce(function(s,c){return s+(+c.q||0);},0);}
+function parseDate(s){
+  if(!s)return null;
+  var p=s.split("/");
+  if(p.length!==3)return null;
+  return new Date(p[2]+"-"+p[1].padStart(2,"0")+"-"+p[0].padStart(2,"0")+"T12:00:00");
+}
+function livCmds(lid){
+  var today=parseDate(td());
+  return CMDS.filter(function(c){
+    if(c.lid!==lid||c.s==="Annulee"||c.s==="Livree")return false;
+    // If has a planned delivery date (dls), show only if dls <= today
+    if(c.dls){
+      var dls=parseDate(c.dls);
+      if(dls&&dls>today)return false; // not yet due
+    }
+    return true; // show: no date set, or date is today/past
+  }).sort(function(a,b){
+    // Sort by manual order if set, else by creation date
+    if(a.ord!==undefined&&b.ord!==undefined)return a.ord-b.ord;
+    var da=parseDate(a.dls||a.dc),db=parseDate(b.dls||b.dc);
+    if(da&&db)return da-db;
+    return 0;
+  });
+}
 function closeOv(){document.getElementById("ov").classList.remove("show");document.getElementById("mdc").innerHTML="";}
 function stTag(s){
   var m={"A programmer":"tag tag-ap","Programmee":"tag tag-pr","En cours":"tag tag-ec","Retardee":"tag tag-re","Annulee":"tag tag-an","Livree":"tag tag-lv"};
@@ -537,6 +560,8 @@ document.addEventListener("click",function(e){
   else if(a==="new-cmd")openNewCmd();
   else if(a==="edit-cmd")editCmd(id);
   else if(a==="unaff"){unaff(id);fbSave(render);}
+  else if(a==="mup"){moveCmd(id,t.dataset.lid,-1);fbSave(render);}
+  else if(a==="mdn"){moveCmd(id,t.dataset.lid,1);fbSave(render);}
   else if(a==="cir"){var ci=parseInt(t.dataset.ci);var cirs=getCircuits(id);if(cirs[ci])openMaps(cirs[ci]);}
   else if(a==="copy")copyLink(t.dataset.url);
   else if(a==="ocl")openClientForm(id||null);
@@ -705,7 +730,15 @@ function pgDB(){
 }
 
 function pgCMD(){
-  var tc=CMDS.filter(function(c){return c.dc===td();});
+  var tc=CMDS.filter(function(c){return c.s!=="Livree"||c.dc===td();});
+  tc.sort(function(a,b){
+    // Future commands at bottom
+    var af=a.dls&&parseDate(a.dls)>parseDate(td())?1:0;
+    var bf=b.dls&&parseDate(b.dls)>parseDate(td())?1:0;
+    if(af!==bf)return af-bf;
+    var po={"Critique":0,"Importante":1,"Normale":2};
+    return (po[a.pri||"Normale"]||0)-(po[b.pri||"Normale"]||0);
+  });
   var h='<div class="shd"><b style="color:var(--b)">Commandes du jour</b><button class="btn btnp" data-a="new-cmd">+ Nouvelle</button></div>';
   if(!tc.length) return h+'<div class="em">Aucune commande.</div>';
   tc.sort(function(a,b){var po={"Critique":0,"Importante":1,"Normale":2};return (po[a.pri||"Normale"]||0)-(po[b.pri||"Normale"]||0);});
@@ -714,7 +747,7 @@ function pgCMD(){
       +'<div style="font-size:10px;color:var(--mut);font-weight:600;min-width:68px">'+c.id+'</div>'
       +'<div style="flex:1;min-width:120px"><div style="font-weight:700">'+c.cn+'</div>'
       +'<div style="font-size:11px;color:var(--mut)">'+c.c+' &mdash; '+c.w+'</div>'
-      +(c.dls?'<div style="font-size:11px;color:var(--b)">📅 '+c.dls+'</div>':'')
+      +(c.dls?'<div style="font-size:11px;color:'+(parseDate(c.dls)>parseDate(td())?'#1565C0':'var(--gd)')+'">📅 '+(parseDate(c.dls)>parseDate(td())?'Prévue le ':'Dû le ')+c.dls+'</div>':'')
       +(c.note?'<div style="font-size:11px;color:#7B1FA2">📌 '+c.note+'</div>':'')
       +(c.rem?'<div style="font-size:11px;color:#854F0B">💬 '+c.rem+'</div>':'')
       +'</div>'
@@ -754,13 +787,18 @@ function pgAFF(){
         +'<select id="'+gid+'" style="flex:1;font-size:12px;padding:6px">'+lo+'</select>'
         +'<button class="btn btng bsm" data-a="afc" data-grp="'+com+'">Affecter tout</button></div>';
       cs.forEach(function(c){
+        var isFuture=c.dls&&parseDate(c.dls)>parseDate(td());
         var lo2="<option value=''>— livreur —</option>";
         LV.forEach(function(l){lo2+='<option value="'+l.id+'"'+(l.id===c.lid?' selected':'')+'>'+l.n+'</option>';});
-        h+='<div class="or" style="margin-bottom:4px">'
+        h+='<div class="or" style="margin-bottom:4px;'+(isFuture?'background:#F0F4FF;opacity:.75':'')+'">'
           +'<div style="font-weight:600;font-size:12px;flex:1">'+c.cn+'</div>'
           +'<div style="font-size:10px;color:var(--mut)">'+c.a.substring(0,35)+'</div>'
-          +'<b style="color:var(--gd)">'+c.q+'</b>'+priTag(c.pri||"Normale")
-          +'<select data-a="aff" data-id="'+c.id+'" style="width:100px;font-size:11px;padding:3px">'+lo2+'</select></div>';
+          +'<b style="color:var(--gd)">'+c.q+'</b>'+priTag(c.pri||"Normale");
+        if(isFuture){
+          h+='<span class="tag tag-pr" style="font-size:10px">📅 '+c.dls+'</span>';
+        }
+        h+='<select data-a="aff" data-id="'+c.id+'" style="width:100px;font-size:11px;padding:3px">'+lo2+'</select>';
+        h+='</div>';
       });
       h+='</div></div>';
     });
@@ -791,6 +829,8 @@ function pgAFF(){
         +'<span style="background:'+col+';color:white;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">'+(ci+1)+'</span>'
         +'<span style="flex:1;font-weight:600">'+c.cn+'</span><span style="color:var(--mut);font-size:10px">'+c.c+'</span>'
         +'<b style="color:var(--gd)">'+c.q+'</b>'+stTag(c.s||"A programmer")
+        +'<button data-a="mup" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 6px;font-size:13px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white" title="Monter">↑</button>'
+        +'<button data-a="mdn" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 6px;font-size:13px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white" title="Descendre">↓</button>'
         +'<button data-a="unaff" data-id="'+c.id+'" style="padding:2px 7px;font-size:11px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white">x</button></div>';
     });
     if(!cs.length)h+='<div style="font-size:12px;color:var(--mut);text-align:center;padding:5px">Aucune commande</div>';
@@ -933,6 +973,7 @@ function rnLiv(){
         +'<span style="font-weight:700;flex:1">'+c.cn+' &mdash; '+(c.qr||c.q)+' bonb.</span>'
         +(c.vi?'<span class="tag tag-pr">'+c.vi+' vides</span>':'')
         +(c.bl?'<span class="tag" style="background:#FFE8F4;color:#E5007D">BL '+c.bl+'</span>':'')
+        +(c.obs?'<span class="tag" style="background:#FFF8E1;color:#F57F17">💬 '+c.obs+'</span>':'')
         +'</div>';
       return;
     }
@@ -940,6 +981,7 @@ function rnLiv(){
       +'<div class="snum" style="background:'+col+'">'+(j+1)+'</div>'
       +'<div style="flex:1"><div style="font-weight:800;font-size:15px;color:var(--b)">'+c.cn+'</div>'
       +'<div style="font-size:11px;color:var(--mut)">'+c.c+' &mdash; '+c.a.substring(0,42)+'</div>'
+      +(c.dc!==td()?'<div style="font-size:11px;color:#E53935;font-weight:700">⚠ Commande du '+c.dc+(c.dls?' &mdash; Prévue le '+c.dls:'')+'</div>':'')
       +(c.dls?'<div style="font-size:11px;color:var(--b)">📅 '+c.dls+'</div>':'')
       +'</div>'+stTag(c.s||"A programmer")+priTag(c.pri||"Normale")+'</div>'
       +'<div class="scb">'
@@ -952,6 +994,8 @@ function rnLiv(){
       +'<div class="fbox"><label>Vides recup.</label><input type="number" data-a="sf" data-id="'+c.id+'" data-f="vi" value="'+(c.vi||"")+'" placeholder="0" min="0" inputmode="numeric"></div>'
       +'<div class="fbox"><label>N Bon BL</label><input type="text" data-a="sf" data-id="'+c.id+'" data-f="bl" value="'+(c.bl||"")+'" placeholder="BL-..."></div>'
       +'</div>'
+      +'<div class="fbox" style="margin-top:8px"><label>Observation livreur</label>'
+      +'<input type="text" data-a="sf" data-id="'+c.id+'" data-f="obs" value="'+(c.obs||"")+'" placeholder="Remarque, incident, client absent..."></div>'
       +'<button data-a="nav" data-addr="'+c.a+' '+c.c+' '+c.w+' Algerie" style="width:100%;padding:11px;background:var(--bl);color:var(--b);border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px">📍 Naviguer vers ce client</button>'
       +'<div style="display:flex;gap:7px;margin-top:7px">'
       +'<button data-a="enc" data-id="'+c.id+'" style="flex:1;padding:10px;background:'+col+'22;color:'+col+';border:1px solid '+col+'44;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">En route</button>'
@@ -1050,7 +1094,7 @@ function editCmd(id){
     +'<div class="fg"><label>Priorite</label><select id="epri">'+po+'</select></div></div>'
     +'<div class="fg"><label>Bonbonnes 19L</label><input type="number" id="eq" value="'+c.q+'" style="font-size:22px;font-weight:800;text-align:center"></div>'
     +'<div class="fg"><label>Accessoires</label><input id="er" value="'+(c.rem||"")+'"></div>'
-    +'<div class="fg"><label>Note interne</label><textarea id="en" rows="2" style="resize:none">'+(c.note||"")+'</textarea></div>'
+    +'<div class="fg"><label>Note interne</label><textarea id="en" rows="2" style="resize:none">'+(c.note||"",c.obs||"")+'</textarea></div>'
     +'<div class="fg"><label>Livreur</label><select id="el">'+lo+'</select></div>'
     +'<div style="display:flex;gap:8px;margin-top:4px">'
     +'<button data-a="cov" style="flex:1;padding:10px;border:1px solid var(--bdr);background:white;border-radius:8px;cursor:pointer;font-weight:600">Fermer</button>'
@@ -1274,7 +1318,7 @@ function gasExportAll(){
 
 // ═══ EXPORT CSV ══════════════════════════════════════════════════
 function exportCSV(){
-  var rows=[["N Commande","Date","Date Livr.","Client","Wilaya","Commune","Adresse","Bonb.Cmd","Bonb.Livrees","Vides","Livreur","Statut","Priorite","N BL","Accessoires","Note"]];
+  var rows=[["N Commande","Date","Date Livr.","Client","Wilaya","Commune","Adresse","Bonb.Cmd","Bonb.Livrees","Vides","Livreur","Statut","Priorite","N BL","Accessoires","Note","Observation Livreur"]];
   CMDS.forEach(function(c){
     rows.push([
       c.id,c.dc,c.dls||"",c.cn,c.w,c.c,c.a,
@@ -1348,6 +1392,20 @@ function renderLoading(){
     +'</div>'
     +'<style>@keyframes spin{to{transform:rotate(360deg)}}</style>'
     +'</div>';
+}
+
+function moveCmd(cid,lid,dir){
+  var cs=livCmds(lid);
+  var idx=cs.findIndex(function(x){return x.id===cid;});
+  if(idx<0)return;
+  var newIdx=idx+dir;
+  if(newIdx<0||newIdx>=cs.length)return;
+  // Assign order numbers
+  cs.forEach(function(c,i){c.ord=i;});
+  // Swap
+  var tmp=cs[idx].ord;
+  cs[idx].ord=cs[newIdx].ord;
+  cs[newIdx].ord=tmp;
 }
 // ═══ INIT ════════════════════════════════════════
 ld();detectMode();
