@@ -753,6 +753,8 @@ function pgDB(){
       });
       h+='</div>';
     }
+    // Metro circuit view
+    h+=renderMetroCircuit(cirs,col,l);
     h+='</div>';
   });
   if(!any) h+='<div class="em">Aucune livraison affectee</div>';
@@ -784,7 +786,9 @@ function pgCMD(){
       +'<b style="color:var(--gd)">'+c.q+'</b>'
       +'<div style="font-size:11px">'+(c.lid?'<span style="color:'+lcolor(c.lid)+';font-weight:700">'+lname(c.lid)+'</span>':'<span style="color:#E53935">—</span>')+'</div>'
       +stTag(c.s||"A programmer")+priTag(c.pri||"Normale")
-      +'<button class="btn bxs" data-a="edit-cmd" data-id="'+c.id+'">Edit</button></div>';
+      +'<button class="btn bxs" data-a="edit-cmd" data-id="'+c.id+'">Edit</button>'
+      +'<button data-a="del-cmd" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;background:white;color:#C62828">🗑</button>'
+      +'</div>';
   });
   return h;
 }
@@ -986,6 +990,11 @@ function pgBIL(){
   var lq=livrees.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
   var vi=livrees.reduce(function(s,c){return s+(+c.vi||0);},0);
   var h='<div class="shd"><b style="color:var(--b)">Bilan &mdash; '+new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b>'
+  +'<div style="display:flex;gap:6px">'
+  +'<button class="btn bsm btng" onclick="exportCSV()">⬇ CSV</button>'
+  +'<button class="btn bsm" style="background:#0F9D58;color:white;border-color:#0F9D58" onclick="openGasConfig()">📊 Sheets</button>'
+  +'<button class="btn bsm" style="background:#C62828;color:white;border-color:#C62828" onclick="clearAll()">🗑 Tout effacer</button>'
+  +'</div></div>'
   +'<div style="display:flex;gap:6px">'
   +'<button class="btn btng bsm" onclick="exportCSV()">⬇ CSV / Excel</button>'
   +'<button class="btn bsm" style="background:#0F9D58;color:white;border-color:#0F9D58" onclick="openGasConfig()">📊 Google Sheets</button>'
@@ -1616,6 +1625,78 @@ function pgPLAN(){
     h+='<div class="al al-ok">🎉 Toutes les livraisons du jour sont terminées !</div>';
   }
   return h;
+}
+
+function renderMetroCircuit(cirs, col, livreur){
+  if(!cirs.length)return '<div class="em">Aucune livraison</div>';
+  var html='';
+  cirs.forEach(function(cir,ci){
+    var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
+    var cliv=cir.filter(function(c){return c.s==="Livree";});
+    var pct=Math.round(cload/livreur.cap*100);
+    var livPct=cir.length?Math.round(cliv.length/cir.length*100):0;
+    html+='<div class="cir-block">';
+    // Header
+    html+='<div class="cir-hd">'
+      +'<div class="cir-num" style="background:'+col+'">'+(ci+1)+'</div>'
+      +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt)">Circuit '+(ci+1)+'</div>'
+      +'<div style="font-size:10px;color:var(--mut)">'+cir.length+' arrets — '+cload+' bonb. / '+livreur.cap+' cap.</div></div>'
+      +'<div style="font-size:12px;font-weight:700;color:'+(livPct===100?'#4CAF50':'#E53935')+'">'+cliv.length+'/'+cir.length+' livres</div>'
+      +'</div>';
+    // Body
+    html+='<div class="cir-body">';
+    // Capacity bar
+    html+='<div class="cir-prog"><div class="cir-pf" style="width:'+Math.min(pct,100)+'%;background:'+col+'"></div></div>';
+    html+='<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-bottom:10px"><span>Capacite</span><span>'+cload+' / '+livreur.cap+' bonb.</span></div>';
+    // Metro stops
+    // Build gradient for line
+    var livCount=0,total=cir.length;
+    var firstNonLiv=cir.findIndex(function(c){return c.s!=="Livree";});
+    var gradPct=firstNonLiv<0?100:Math.round(firstNonLiv/total*100);
+    html+='<div class="metro-wrap">';
+    html+='<div class="metro-line" style="background:linear-gradient(to bottom,#4CAF50 '+gradPct+'%,#E53935 '+gradPct+'%)"></div>';
+    // Depot start
+    html+='<div class="m-stop"><div class="m-dot m-dot-d">D</div>'
+      +'<div class="m-cnt"><div class="m-name">Depot Odelys</div>'
+      +'<div class="m-addr">Miliana, Ain Defla</div>'
+      +'<div class="m-bonb"><span class="m-bdg m-bdg-d">Chargement '+cload+' bonb.</span></div></div></div>';
+    // Stops
+    cir.forEach(function(c,si){
+      var isLiv=c.s==="Livree";
+      html+='<div class="m-stop"><div class="m-dot '+(isLiv?'m-dot-g':'m-dot-r')+'">'+(si+1)+'</div>'
+        +'<div class="m-cnt"><div class="m-name">'+c.cn+'</div>'
+        +'<div class="m-addr">'+c.c+' — '+c.a.substring(0,38)+'</div>'
+        +'<div class="m-bonb"><span>'+c.q+' bonb.</span>'
+        +(isLiv?'<span class="m-bdg m-bdg-g">&#10003; Livre'+(c.bl?' — '+c.bl:'')+'</span>':'<span class="m-bdg m-bdg-r">En attente</span>')
+        +(c.dls&&c.dls!==td()?'<span style="font-size:10px;color:var(--b)">📅 '+c.dls+'</span>':'')
+        +(c.obs?'<span class="m-bdg" style="background:#FFF8E1;color:#854F0B">💬 '+c.obs+'</span>':'')
+        +'</div></div></div>';
+    });
+    // Depot return
+    html+='<div class="m-stop"><div class="m-dot m-dot-d">D</div>'
+      +'<div class="m-cnt"><div class="m-name">Retour Depot Odelys</div>'
+      +'<div class="m-addr">Fin circuit '+(ci+1)+'</div></div></div>';
+    html+='</div></div></div>';
+    // Recharge between circuits
+    if(ci<cirs.length-1){
+      var nextLoad=cirs[ci+1].reduce(function(s,c){return s+(+c.q||0);},0);
+      html+='<div class="m-recharg">&#8617; Retour depot — Rechargement circuit '+(ci+2)+' ('+nextLoad+' bonb.)</div>';
+    }
+  });
+  return html;
+}
+
+function delCmd(id){
+  if(!confirm("Supprimer cette commande ?"))return;
+  CMDS=CMDS.filter(function(c){return c.id!==id;});
+  fbSave(render);
+}
+function clearAll(){
+  if(!confirm("Effacer TOUTES les commandes ?\n\nCette action est irréversible."))return;
+  if(!confirm("Confirmer : supprimer tout l'historique ?"))return;
+  CMDS=[];N=1000;
+  fbSave(render);
+  alert("Toutes les commandes ont été supprimées.");
 }
 // ═══ INIT ════════════════════════════════════════
 ld();detectMode();
