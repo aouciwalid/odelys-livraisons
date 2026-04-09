@@ -583,9 +583,13 @@ document.addEventListener("click",function(e){
   else if(a==="sfb")saveFbConfig();
   else if(a==="syn"){renderLoading();fbLoad(function(){render();});}
   else if(a==="afc"){
-    var sel=document.getElementById("sel-"+t.dataset.grp);
-    if(!sel||!sel.value){alert("Choisissez un livreur");return;}
-    CMDS.filter(function(c){return c.dc===td()&&!c.lid&&c.c===t.dataset.grp&&c.s!="Annulee";}).forEach(function(c){c.lid=sel.value;if(c.s==="A programmer")c.s="Programmee";});
+    var liv=t.dataset.liv;
+    if(!liv){alert("Choisissez un livreur");return;}
+    CMDS.filter(function(c){
+    var dlsD=c.dls?parseDate(c.dls):null;
+    var isFut=dlsD&&dlsD>parseDate(td());
+    return c.c===t.dataset.grp&&c.s!="Annulee"&&c.s!="Livree"&&!isFut;
+  }).forEach(function(c){c.lid=liv;if(c.s==="A programmer")c.s="Programmee";});
     fbSave(render);
   }
 });
@@ -681,7 +685,12 @@ function saveFbConfig(){
 // ═══ DASHBOARD ════════════════════════════════════
 function pgDB(){
   var tc=CMDS.filter(function(c){return c.dc===td();});
-  var lv=tc.filter(function(c){return c.s==="Livree";});
+  var lv=CMDS.filter(function(c){return c.s==="Livree";}).sort(function(a,b){
+    // Most recent first: compare date + time of confirmation
+    var da=parseDate(a.dl||a.dc), db=parseDate(b.dl||b.dc);
+    if(da&&db)return db-da;
+    return 0;
+  });
   var at=tc.filter(function(c){return c.s==="A programmer"||c.s==="Programmee";});
   var tq=tc.reduce(function(s,c){return s+(+c.q||0);},0);
   var lq=lv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
@@ -760,99 +769,129 @@ function pgCMD(){
 }
 
 function pgAFF(){
-  // Show ALL non-delivered, non-cancelled commands grouped by commune
-  var all=CMDS.filter(function(c){return c.s!=="Annulee"&&c.s!=="Livree";});
-  var h='<div class="shd"><b style="color:var(--b)">Affectation ('+all.length+' commandes)</b></div>';
-  if(!all.length){return h+'<div class="em">Aucune commande active</div>';}
+  var today2=parseDate(td());
 
-  // Group by commune
-  var byC={};
-  all.forEach(function(c){var k=c.c||c.w||"Autre";if(!byC[k])byC[k]=[];byC[k].push(c);});
-
-  // Sort communes: most bonbonnes first
-  var communes=Object.keys(byC).sort(function(a,b){
-    return byC[b].reduce(function(s,c){return s+(+c.q||0);},0)
-          -byC[a].reduce(function(s,c){return s+(+c.q||0);},0);
+  // Commandes affectables : dls <= aujourd'hui OU pas de dls
+  var na=CMDS.filter(function(c){
+    if(c.lid||c.s==="Annulee"||c.s==="Livree")return false;
+    var d=c.dls?parseDate(c.dls):null;
+    return !d||d<=today2;
   });
 
-  communes.forEach(function(com){
-    var cs=byC[com];
-    var tot=cs.reduce(function(s,c){return s+(+c.q||0);},0);
-    var unassigned=cs.filter(function(c){return !c.lid;}).length;
+  // Commandes futures non affectées
+  var future=CMDS.filter(function(c){
+    if(c.lid||c.s==="Annulee"||c.s==="Livree")return false;
+    var d=c.dls?parseDate(c.dls):null;
+    return d&&d>today2;
+  });
 
-    // Livreur select for "assign all"
-    var lo="<option value=''>Choisir livreur...</option>";
-    LV.forEach(function(l){
-      var d=l.cap-capUsed(l.id);
-      lo+='<option value="'+l.id+'"'+(d<tot?' style="color:#aaa"':'')+'>'+l.n+' ('+d+' dispo)</option>';
+  var h='<b style="color:var(--b);display:block;margin-bottom:.875rem">Affectation des tournees</b>';
+
+  // ── Non affectées groupées par commune ─────────────
+  if(na.length){
+    // Grouper par commune
+    var byC={};
+    na.forEach(function(c){var k=c.c||c.w||"Autre";if(!byC[k])byC[k]=[];byC[k].push(c);});
+    var communes=Object.keys(byC).sort(function(a,b){
+      return byC[b].reduce(function(s,c){return s+(+c.q||0);},0)
+            -byC[a].reduce(function(s,c){return s+(+c.q||0);},0);
     });
-    var gid="sel-"+com.replace(/[^a-zA-Z0-9]/g,"_");
-
-    h+='<div class="cgrp">'
-      +'<div class="cgrp-hd">'
-      +'<span>📍</span>'
-      +'<span style="font-weight:700;flex:1">'+com+'</span>'
-      +(unassigned>0?'<span class="tag" style="background:#FFEBEE;color:#C62828">'+unassigned+' non affectees</span>':'')
-      +'<span class="tag tag-ap" style="margin-left:4px">'+cs.length+' cmd — '+tot+' bonb.</span>'
-      +'</div>'
-      +'<div class="cgrp-bd">'
-      +'<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">'
-      +'<select id="'+gid+'" style="flex:1;font-size:12px;padding:6px">'+lo+'</select>'
-      +'<button class="btn btng bsm" data-a="afc" data-grp="'+com+'">Affecter tout</button>'
-      +'</div>';
-
-    cs.forEach(function(c){
-      var isFuture=c.dls&&parseDate(c.dls)>parseDate(td());
-      var isLate=!c.dls&&c.dc!==td()&&parseDate(c.dc)<parseDate(td());
-      var rowStyle="margin-bottom:4px;"
-        +(isFuture?"border-color:#3D3DB5;background:#F0F4FF;":"")
-        +(isLate?"border-color:#E53935;":"")
-        +(!c.lid?"border-left:3px solid #E53935;":"border-left:3px solid #72B81E;");
-
-      var lo2="<option value=''>— non affecte —</option>";
-      LV.forEach(function(l){lo2+='<option value="'+l.id+'"'+(l.id===c.lid?' selected':'')+'>'+l.n+'</option>';});
-
-      h+='<div class="or" style="'+rowStyle+'">'
-        +'<div style="flex:1;min-width:0">'
-        +'<div style="font-weight:600;font-size:12px">'+c.cn
-        +(isFuture?' <span style="font-size:10px;color:#3D3DB5">📅 '+c.dls+'</span>':'')
-        +(isLate?' <span style="font-size:10px;color:#E53935">⚠ En retard</span>':'')
+    h+='<div class="al al-i" style="font-size:12px">📍 Groupées par zone géographique — Cliquez sur un livreur pour affecter toute une commune</div>';
+    communes.forEach(function(com){
+      var cs=byC[com];
+      var tot=cs.reduce(function(s,c){return s+(+c.q||0);},0);
+      h+='<div class="cgrp">'
+        +'<div class="cgrp-hd">'
+        +'<span>📍</span>'
+        +'<span style="font-weight:700;flex:1">'+com+'</span>'
+        +'<span class="tag tag-ap">'+cs.length+' cmd — '+tot+' bonb.</span>'
         +'</div>'
-        +'<div style="font-size:10px;color:var(--mut)">'+c.a.substring(0,40)+'</div>'
-        +'</div>'
-        +'<b style="color:var(--gd);flex-shrink:0">'+c.q+'</b>'
-        +priTag(c.pri||"Normale")
-        +stTag(c.s||"A programmer")
-        +'<select data-a="aff" data-id="'+c.id+'" style="width:110px;font-size:11px;padding:3px;flex-shrink:0">'+lo2+'</select>'
+        +'<div class="cgrp-bd">'
+        // Boutons livreurs pour "Affecter tout"
+        +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center">'
+        +'<span style="font-size:11px;color:var(--mut);font-weight:600">Affecter tout :</span>';
+      LV.forEach(function(l,i){
+        var d=l.cap-capUsed(l.id);
+        var col=DC[i%DC.length];
+        h+='<button class="btn bxs" data-a="afc" data-grp="'+com+'" data-liv="'+l.id+'"'
+          +' style="background:'+col+'22;color:'+col+';border-color:'+col+'66">'+ini(l.n)+' <span style="font-size:10px">('+d+')</span></button>';
+      });
+      h+='</div>';
+      // Lignes individuelles
+      cs.forEach(function(c){
+        var lo="<option value=''>— livreur —</option>";
+        LV.forEach(function(l){lo+='<option value="'+l.id+'">'+l.n+'</option>';});
+        h+='<div class="or" style="margin-bottom:4px">'
+          +'<div style="flex:1"><b style="font-size:12px">'+c.cn+'</b> '+priTag(c.pri||"Normale")
+          +(c.dls?'<span style="font-size:10px;color:var(--gd);margin-left:4px">📅 '+c.dls+'</span>':'')
+          +'<div style="font-size:10px;color:var(--mut)">'+c.a.substring(0,42)+'</div></div>'
+          +'<b style="color:var(--gd)">'+c.q+'</b>'
+          +'<select data-a="aff" data-id="'+c.id+'" style="width:120px;font-size:12px;padding:5px">'+lo+'</select>'
+          +'</div>';
+      });
+      h+='</div></div>';
+    });
+  } else {
+    h+='<div class="al al-ok">Toutes les commandes du jour sont affectées !</div>';
+  }
+
+  // ── Commandes futures ──────────────────────────────
+  if(future.length){
+    h+='<div class="card" style="border-color:#3D3DB5;margin-top:.5rem">'
+      +'<div style="font-size:12px;font-weight:700;color:#3D3DB5;margin-bottom:8px">📅 À venir — '+future.length+' commande(s) (modifier la date pour affecter)</div>';
+    future.forEach(function(c){
+      h+='<div class="or" style="background:#F0F4FF;margin-bottom:4px">'
+        +'<div style="flex:1"><b style="font-size:12px">'+c.cn+'</b>'
+        +'<span style="font-size:10px;color:#3D3DB5;font-weight:700;margin-left:6px">📅 '+c.dls+'</span>'
+        +'<div style="font-size:10px;color:var(--mut)">'+c.c+'</div></div>'
+        +'<b style="color:var(--gd)">'+c.q+'</b>'+priTag(c.pri||"Normale")
+        +'<button data-a="edit-cmd" data-id="'+c.id+'" class="btn bxs" style="font-size:11px">✏ Modifier</button>'
         +'</div>';
     });
+    h+='</div>';
+  }
 
-    h+='</div></div>';
-  });
-
-  // Capacity view per livreur
-  h+='<div style="margin-top:1rem"><b style="color:var(--b);display:block;margin-bottom:.5rem">Capacite des livreurs</b>';
+  // ── Par livreur avec circuits Google Maps ──────────
   LV.forEach(function(l,i){
     var cs=livCmds(l.id);
     var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
     var pct=Math.min(100,Math.round(u/l.cap*100));
     var col=DC[i%DC.length],bc=pct>90?"#E53935":pct>70?"#FB8C00":col;
     var cirs=getCircuits(l.id);
-    h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 11px;background:white;border:1px solid var(--bdr);border-radius:9px;margin-bottom:5px">'
-      +'<div style="width:30px;height:30px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;flex-shrink:0">'+ini(l.n)+'</div>'
-      +'<div style="flex:1"><div style="font-weight:700;font-size:12px;color:'+col+'">'+l.n+'</div>'
-      +'<div style="height:4px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;background:'+bc+';width:'+pct+'%"></div></div></div>'
-      +'<div style="font-size:11px;color:var(--mut);text-align:right">'+u+'/'+l.cap+' bonb.<br>'+(cirs.length>1?'<b style="color:#E5007D">'+cirs.length+' circuits</b>':'1 circuit')+'</div>';
+    h+='<div class="card"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">'
+      +'<div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white">'+ini(l.n)+'</div>'
+      +'<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+' — '+l.v+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+u+'/'+l.cap+' bonb. — '+(cirs.length>1?'<b style="color:#E5007D">'+cirs.length+' circuits</b>':'1 circuit')+'</div>'
+      +'<div style="height:3px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden">'
+      +'<div style="height:100%;background:'+bc+';width:'+pct+'%"></div></div></div>';
+    // Boutons circuits Google Maps
     if(cs.length){
-      h+='<div style="display:flex;gap:3px">';
+      h+='<div style="display:flex;flex-direction:column;gap:3px">';
       cirs.forEach(function(cir,ci){
-        h+='<button class="btn bxs btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">🗺'+(ci+1)+'</button>';
+        var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
+        h+='<button class="btn bsm btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">'
+          +'🗺 Circuit opt.'+(ci+1)+' ('+cload+' bonb.) '
+          +cir.map(function(x){return x.cn.substring(0,5);}).join(' · ')
+          +'</button>';
       });
       h+='</div>';
     }
     h+='</div>';
+    cs.forEach(function(c,ci){
+      h+='<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--gray);border-radius:7px;margin-bottom:3px;font-size:12px">'
+        +'<span style="background:'+col+';color:white;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">'+(ci+1)+'</span>'
+        +'<span style="flex:1;font-weight:600">'+c.cn+'</span>'
+        +(c.dls&&c.dls!==td()?'<span style="font-size:10px;color:var(--b)">📅 '+c.dls+'</span>':'')
+        +'<span style="color:var(--mut);font-size:10px">'+c.c+'</span>'
+        +'<b style="color:var(--gd)">'+c.q+'</b>'+stTag(c.s||"A programmer")
+        +'<button data-a="mup" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 5px;border:1px solid var(--bdr);border-radius:5px;cursor:pointer;background:white" title="Monter">↑</button>'
+        +'<button data-a="mdn" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 5px;border:1px solid var(--bdr);border-radius:5px;cursor:pointer;background:white" title="Descendre">↓</button>'
+        +'<button data-a="unaff" data-id="'+c.id+'" style="padding:2px 7px;font-size:11px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white">x</button>'
+        +'</div>';
+    });
+    if(!cs.length) h+='<div style="font-size:12px;color:var(--mut);text-align:center;padding:5px">Aucune commande</div>';
+    h+='</div>';
   });
-  h+='</div>';
   return h;
 }
 
@@ -915,7 +954,12 @@ function pgCL(){
 
 function pgBIL(){
   var tc=CMDS.filter(function(c){return c.dc===td();});
-  var lv=tc.filter(function(c){return c.s==="Livree";});
+  var lv=CMDS.filter(function(c){return c.s==="Livree";}).sort(function(a,b){
+    // Most recent first: compare date + time of confirmation
+    var da=parseDate(a.dl||a.dc), db=parseDate(b.dl||b.dc);
+    if(da&&db)return db-da;
+    return 0;
+  });
   var tq=tc.reduce(function(s,c){return s+(+c.q||0);},0);
   var lq=lv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
   var vi=tc.reduce(function(s,c){return s+(+c.vi||0);},0);
@@ -944,6 +988,26 @@ function pgBIL(){
       +'<div style="text-align:center;min-width:45px"><div style="font-size:18px;font-weight:800;color:#854F0B">'+lv2+'</div><div style="font-size:10px;color:var(--mut)">vides</div></div></div>';
   });
   h+='</div>';
+  // Delivered commands list - most recent first
+  if(lv.length>0){
+    h+='<div class="card"><b style="color:var(--b);display:block;margin-bottom:8px">Livraisons realisees ('+lv.length+')</b>';
+    lv.forEach(function(c){
+      var idx=LV.findIndex(function(l){return l.id===c.lid;});
+      var col=c.lid?DC[idx<0?0:idx%DC.length]:"#9E9E9E";
+      h+='<div class="or" style="border-left:3px solid '+col+';margin-bottom:4px">'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-weight:700;font-size:12px">'+c.cn+'</div>'
+        +'<div style="font-size:10px;color:var(--mut)">'+c.c+' &mdash; '+(c.dl||c.dc)+'</div>'
+        +'</div>'
+        +'<div style="text-align:center;min-width:40px"><div style="font-size:16px;font-weight:800;color:var(--gd)">'+(c.qr||c.q)+'</div><div style="font-size:9px;color:var(--mut)">bonb.</div></div>'
+        +(c.vi?'<span class="tag tag-pr">'+c.vi+' vides</span>':'')
+        +(c.bl?'<span class="tag" style="background:#FFE8F4;color:#E5007D">'+c.bl+'</span>':'')
+        +(c.obs?'<span class="tag" style="background:#FFF8E1;color:#F57F17">💬 '+c.obs+'</span>':'')
+        +'<span style="font-size:10px;color:'+col+';font-weight:700">'+lname(c.lid)+'</span>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
   return h;
 }
 
