@@ -1647,102 +1647,39 @@ function pgPLAN(){
 }
 
 function renderMetroCircuit(cirs,col,livreur){
-  if(!cirs||!cirs.length)return '<div style="padding:8px;color:var(--mut);font-size:12px;text-align:center">Aucune livraison</div>';
-  var html='';
+  if(!cirs||!cirs.length)return "";
+  var h="";
   cirs.forEach(function(cir,ci){
     if(!cir||!cir.length)return;
     var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
-    var cliv=cir.filter(function(c){return c.s==="Livree";});
-    var pct=Math.min(100,Math.round(cload/(livreur.cap||100)*100));
-    var livPct=cir.length?Math.round(cliv.length/cir.length*100):0;
-    var lineCol=livPct===100?'#4CAF50':livPct>0?col:'#E53935';
-
-    // Rechargement entre circuits
+    var cliv=cir.filter(function(c){return c.s==="Livree";}).length;
     if(ci>0){
-      html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;margin:4px 0;background:#EBEBFF;border-radius:8px;border-left:3px solid '+col+'">'
-        +'<span style="font-size:13px">&#8617;</span>'
-        +'<span style="font-size:11px;color:'+col+';font-weight:700">Retour depot — Rechargement circuit '+(ci+1)+' ('+cload+' bonb.)</span>'
-        +'</div>';
+      h+="<div style='text-align:center;padding:3px;margin:4px 0;font-size:11px;color:"+col+";font-weight:700;background:#F5F5FF;border-radius:6px'>Rechargement depot — Circuit "+(ci+1)+" ("+cload+" bonb.)</div>";
     }
-
-    // Circuit card
-    html+='<div style="background:white;border:1px solid #E0E0E0;border-radius:10px;margin-bottom:10px;overflow:hidden">';
-    
-    // Header
-    html+='<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #F0F0F0">'
-      +'<div style="width:22px;height:22px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0">'+(ci+1)+'</div>'
-      +'<div style="flex:1">'
-      +'<div style="font-size:12px;font-weight:700;color:#333">Circuit '+(ci+1)+'</div>'
-      +'<div style="font-size:10px;color:#888">'+cir.length+' arrets &mdash; '+cload+' bonb. / '+livreur.cap+' cap.</div>'
-      +'</div>'
-      +'<div style="font-size:12px;font-weight:700;color:'+(livPct===100?'#4CAF50':'#E53935')+'">'+cliv.length+'/'+cir.length+' livres</div>'
-      +'</div>';
-
-    // Capacity bar
-    html+='<div style="padding:6px 12px 0">'
-      +'<div style="height:4px;background:#F0F0F0;border-radius:2px;overflow:hidden">'
-      +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px"></div>'
-      +'</div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:2px;margin-bottom:8px">'
-      +'<span>Capacite</span><span>'+cload+' / '+livreur.cap+'</span>'
-      +'</div></div>';
-
-    // Metro stops - using table layout for reliability
-    html+='<div style="padding:0 12px 10px">';
-    
-    // All stops: depot + clients + depot return
-    var allStops = [{type:'depot',label:'Depot Odelys',sub:'Miliana, Ain Defla',info:'Chargement '+cload+' bonb.',color:'#1A1A3E'}];
+    h+="<div style='border:1px solid #DDD;border-radius:9px;margin-bottom:8px;overflow:hidden'>";
+    h+="<div style='background:"+col+"22;padding:6px 11px;display:flex;align-items:center;gap:7px;border-bottom:1px solid #EEE'>";
+    h+="<div style='width:20px;height:20px;border-radius:50%;background:"+col+";color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center'>"+(ci+1)+"</div>";
+    h+="<div style='font-size:12px;font-weight:700;color:"+col+";flex:1'>Circuit "+(ci+1)+"</div>";
+    h+="<div style='font-size:11px;font-weight:700;color:"+(cliv===cir.length?"#2E7D32":"#C62828")+"'>"+cliv+"/"+cir.length+" — "+cload+" bonb.</div>";
+    h+="</div>";
     cir.forEach(function(c,si){
-      allStops.push({type:'client',idx:si+1,cmd:c});
+      var liv=c.s==="Livree";
+      var bg=liv?"#F1FFF1":"#FFFFFF";
+      var dc=liv?"#4CAF50":"#E53935";
+      h+="<div style='display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid #F5F5F5;background:"+bg+"'>";
+      h+="<div style='width:20px;height:20px;border-radius:50%;background:"+dc+";color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0'>"+(si+1)+"</div>";
+      h+="<div style='flex:1;min-width:0'>";
+      h+="<div style='font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>"+c.cn+"</div>";
+      h+="<div style='font-size:10px;color:#999'>"+c.c+"</div>";
+      h+="</div>";
+      h+="<div style='font-size:12px;font-weight:700;color:"+dc+"'>"+c.q+" bonb.</div>";
+      if(liv&&c.bl) h+="<div style='font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:10px'>"+c.bl+"</div>";
+      if(!liv) h+="<div style='font-size:10px;background:#FFEBEE;color:#C62828;padding:2px 6px;border-radius:10px'>Attente</div>";
+      h+="</div>";
     });
-    allStops.push({type:'retour',label:'Retour Depot',sub:'Fin circuit '+(ci+1)});
-
-    allStops.forEach(function(stop,si){
-      var isLast=(si===allStops.length-1);
-      var dotColor=stop.type==='depot'||stop.type==='retour'?'#1A1A3E':(stop.cmd.s==='Livree'?'#4CAF50':'#E53935');
-      var lineColor=si<allStops.length-1?(stop.type==='client'&&stop.cmd.s==='Livree'?'#4CAF50':col):'transparent';
-      
-      html+='<div style="display:flex;gap:0;align-items:stretch">';
-      
-      // Left: dot + line
-      html+='<div style="display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0;margin-right:10px">';
-      html+='<div style="width:22px;height:22px;border-radius:50%;background:'+dotColor+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0;margin-top:4px">';
-      if(stop.type==='depot'||stop.type==='retour') html+='D';
-      else html+=stop.idx;
-      html+='</div>';
-      if(!isLast) html+='<div style="width:3px;flex:1;background:'+lineColor+';min-height:14px;margin-top:2px;margin-bottom:2px;border-radius:2px"></div>';
-      html+='</div>';
-      
-      // Right: content
-      html+='<div style="flex:1;padding:4px 0 '+(isLast?'4':'10')+'px 0">';
-      if(stop.type==='depot'){
-        html+='<div style="font-size:12px;font-weight:700;color:#1A1A3E">'+stop.label+'</div>';
-        html+='<div style="font-size:10px;color:#aaa">'+stop.sub+'</div>';
-        html+='<div style="margin-top:3px"><span style="background:#EBEBFF;color:#3D3DB5;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">'+stop.info+'</span></div>';
-      } else if(stop.type==='retour'){
-        html+='<div style="font-size:12px;font-weight:700;color:#1A1A3E">'+stop.label+'</div>';
-        html+='<div style="font-size:10px;color:#aaa">'+stop.sub+'</div>';
-      } else {
-        var c=stop.cmd;
-        var isLiv=c.s==='Livree';
-        html+='<div style="font-size:12px;font-weight:700;color:#333">'+c.cn+'</div>';
-        html+='<div style="font-size:10px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c.c+' &mdash; '+c.a.substring(0,36)+'</div>';
-        html+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">';
-        html+='<span style="font-size:10px;color:#666">'+c.q+' bonb.</span>';
-        if(isLiv) html+='<span style="background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:600">&#10003; Livre'+(c.bl?' &mdash; '+c.bl:'')+'</span>';
-        else html+='<span style="background:#FFEBEE;color:#C62828;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:600">En attente</span>';
-        if(c.dls&&c.dls!==td()) html+='<span style="font-size:10px;color:#3D3DB5">&#128197; '+c.dls+'</span>';
-        if(c.obs) html+='<span style="background:#FFF8E1;color:#854F0B;padding:2px 6px;border-radius:20px;font-size:10px">&#128172; '+c.obs+'</span>';
-        html+='</div>';
-      }
-      html+='</div>';
-      html+='</div>'; // end stop row
-    });
-
-    html+='</div>'; // end stops
-    html+='</div>'; // end circuit card
+    h+="</div>";
   });
-  return html;
+  return h;
 }
 
 function delCmd(id){
