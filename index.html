@@ -477,7 +477,26 @@ function nid(){return "CMD-"+(++N).toString().padStart(4,"0");}
 function ini(n){return n.split(" ").slice(0,2).map(function(w){return w[0]||"";}).join("").toUpperCase();}
 function lcolor(id){var i=LV.findIndex(function(l){return l.id===id;});return DC[i<0?0:i%DC.length];}
 function lname(id){var l=LV.find(function(l){return l.id===id;});return l?l.n:"?";}
-function capUsed(lid){return livCmds(lid).reduce(function(s,c){return s+(+c.q||0);},0);}
+function capUsed(lid){
+  var l=LV.find(function(x){return x.id===lid;});
+  if(!l)return 0;
+  var cs=CMDS.filter(function(c){
+    return c.lid===lid&&c.s!=="Annulee"&&c.s!=="Livree";
+  });
+  if(!cs.length)return 0;
+  // Find load of current (first incomplete) circuit
+  var load=0,circuitLoad=0;
+  for(var i=0;i<cs.length;i++){
+    load+=(+cs[i].q||0);
+    // If this circuit is full, start a new one
+    if(load>l.cap){
+      // New circuit started - reset to current command load
+      load=(+cs[i].q||0);
+    }
+    circuitLoad=load;
+  }
+  return circuitLoad; // load of current circuit
+}
 function parseDate(s){
   if(!s)return null;
   var p=s.split("/");
@@ -685,15 +704,16 @@ function saveFbConfig(){
 // ═══ DASHBOARD ════════════════════════════════════
 function pgDB(){
   var tc=CMDS.filter(function(c){return c.dc===td();});
-  var lv=CMDS.filter(function(c){return c.s==="Livree";}).sort(function(a,b){
-    // Most recent first: compare date + time of confirmation
+  var lv=CMDS.filter(function(c){return c.s==="Livree"||c.s==="Annulee";}).sort(function(a,b){
     var da=parseDate(a.dl||a.dc), db=parseDate(b.dl||b.dc);
     if(da&&db)return db-da;
     return 0;
   });
+  var livrees=lv.filter(function(c){return c.s==="Livree";});
+  var annulees=lv.filter(function(c){return c.s==="Annulee";});
   var at=tc.filter(function(c){return c.s==="A programmer"||c.s==="Programmee";});
   var tq=tc.reduce(function(s,c){return s+(+c.q||0);},0);
-  var lq=lv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+  var lq=livrees.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
   var vt=tc.reduce(function(s,c){return s+(+c.vi||0);},0);
   var h='<div class="shd"><b style="color:var(--b)">Dashboard — '+new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b>'
     +'<button class="btn btnp bsm" data-a="new-cmd">+ Commande</button></div>';
@@ -814,7 +834,7 @@ function pgAFF(){
         var d=l.cap-capUsed(l.id);
         var col=DC[i%DC.length];
         h+='<button class="btn bxs" data-a="afc" data-grp="'+com+'" data-liv="'+l.id+'"'
-          +' style="background:'+col+'22;color:'+col+';border-color:'+col+'66">'+ini(l.n)+' <span style="font-size:10px">('+d+')</span></button>';
+          +' style="background:'+col+'22;color:'+col+';border-color:'+col+'66;font-size:11px">'+l.n+' ('+d+')</button>';
       });
       h+='</div>';
       // Lignes individuelles
@@ -954,15 +974,16 @@ function pgCL(){
 
 function pgBIL(){
   var tc=CMDS.filter(function(c){return c.dc===td();});
-  var lv=CMDS.filter(function(c){return c.s==="Livree";}).sort(function(a,b){
-    // Most recent first: compare date + time of confirmation
+  var lv=CMDS.filter(function(c){return c.s==="Livree"||c.s==="Annulee";}).sort(function(a,b){
     var da=parseDate(a.dl||a.dc), db=parseDate(b.dl||b.dc);
     if(da&&db)return db-da;
     return 0;
   });
+  var livrees=lv.filter(function(c){return c.s==="Livree";});
+  var annulees=lv.filter(function(c){return c.s==="Annulee";});
   var tq=tc.reduce(function(s,c){return s+(+c.q||0);},0);
-  var lq=lv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
-  var vi=tc.reduce(function(s,c){return s+(+c.vi||0);},0);
+  var lq=livrees.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+  var vi=livrees.reduce(function(s,c){return s+(+c.vi||0);},0);
   var h='<div class="shd"><b style="color:var(--b)">Bilan &mdash; '+new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b>'
   +'<div style="display:flex;gap:6px">'
   +'<button class="btn btng bsm" onclick="exportCSV()">⬇ CSV / Excel</button>'
@@ -990,11 +1011,11 @@ function pgBIL(){
   h+='</div>';
   // Delivered commands list - most recent first
   if(lv.length>0){
-    h+='<div class="card"><b style="color:var(--b);display:block;margin-bottom:8px">Livraisons realisees ('+lv.length+')</b>';
+    h+='<div class="card"><b style="color:var(--b);display:block;margin-bottom:8px">Historique ('+livrees.length+' livrees, '+annulees.length+' annulees)</b>';
     lv.forEach(function(c){
       var idx=LV.findIndex(function(l){return l.id===c.lid;});
-      var col=c.lid?DC[idx<0?0:idx%DC.length]:"#9E9E9E";
-      h+='<div class="or" style="border-left:3px solid '+col+';margin-bottom:4px">'
+      var col=c.s==="Annulee"?"#9E9E9E":(c.lid?DC[idx<0?0:idx%DC.length]:"#9E9E9E");
+      h+='<div class="or" style="border-left:3px solid '+col+';margin-bottom:4px;'+(c.s==="Annulee"?'opacity:.6;background:#F5F5F5':'')+'">'
         +'<div style="flex:1;min-width:0">'
         +'<div style="font-weight:700;font-size:12px">'+c.cn+'</div>'
         +'<div style="font-size:10px;color:var(--mut)">'+c.c+' &mdash; '+(c.dl||c.dc)+'</div>'
