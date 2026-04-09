@@ -991,7 +991,7 @@ function pgBIL(){
   var vi=livrees.reduce(function(s,c){return s+(+c.vi||0);},0);
   var h='<div class="shd"><b style="color:var(--b)">Bilan &mdash; '+new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b>'
   +'<div style="display:flex;gap:6px">'
-  +'<button class="btn bsm btng" onclick="exportCSV()">⬇ CSV</button>'
+  +'<button class="btn bsm btng" onclick="exportCSV()">⬇ Excel</button>'
   +'<button class="btn bsm" style="background:#0F9D58;color:white;border-color:#0F9D58" onclick="openGasConfig()">📊 Sheets</button>'
   +'<button class="btn bsm" style="background:#C62828;color:white;border-color:#C62828" onclick="clearAll()">🗑 Tout effacer</button>'
   +'</div></div>'
@@ -1430,29 +1430,48 @@ function gasExportAll(){
 
 // ═══ EXPORT CSV ══════════════════════════════════════════════════
 function exportCSV(){
-  var rows=[["N Commande","Date","Date Livr.","Client","Wilaya","Commune","Adresse","Bonb.Cmd","Bonb.Livrees","Vides","Livreur","Statut","Priorite","N BL","Accessoires","Note","Observation Livreur"]];
+  if(typeof XLSX==="undefined"){
+    var s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload=function(){_doExport();};
+    document.head.appendChild(s);
+  } else { _doExport(); }
+}
+function _doExport(){
+  var date=new Date().toLocaleDateString("fr-FR").replace(/\//g,"-");
+  var rows=[["N Commande","Date Commande","Date Livr. Prevue","Date Livr. Reelle",
+    "Client","Wilaya","Commune","Adresse",
+    "Bonb. Commandees","Bonb. Livrees","Vides Recuperes","N Bon BL",
+    "Livreur","Statut","Priorite","Accessoires","Note","Observation Livreur"]];
   CMDS.forEach(function(c){
     rows.push([
-      c.id,c.dc,c.dls||"",c.cn,c.w,c.c,c.a,
-      c.q,c.qr||"",c.vi||"",
+      c.id||"",c.dc||"",c.dls||"",c.dl||"",
+      c.cn||"",c.w||"",c.c||"",c.a||"",
+      Number(c.q)||0,
+      c.qr!==null&&c.qr!==""?Number(c.qr):Number(c.q)||0,
+      Number(c.vi)||0,c.bl||"",
       c.lid?lname(c.lid):"",
-      c.s,c.pri||"Normale",c.bl||"",c.rem||"",c.note||""
+      c.s||"",c.pri||"Normale",c.rem||"",c.note||"",c.obs||""
     ]);
   });
-  var csv=rows.map(function(r){
-    return r.map(function(v){
-      var s=String(v||"").replace(/"/g,'""');
-      return s.indexOf(",")>=0||s.indexOf('"')>=0?'"'+s+'"':s;
-    }).join(",");
-  }).join("\n");
-  var bom="\uFEFF"; // UTF-8 BOM for Excel
-  var blob=new Blob([bom+csv],{type:"text/csv;charset=utf-8;"});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");
-  a.href=url;
-  a.download="ODELYS_Commandes_"+new Date().toLocaleDateString("fr-FR").replace(/\//g,"-")+".csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[
+    {wch:12},{wch:12},{wch:14},{wch:14},
+    {wch:35},{wch:12},{wch:14},{wch:42},
+    {wch:10},{wch:10},{wch:10},{wch:12},
+    {wch:14},{wch:12},{wch:10},{wch:20},{wch:25},{wch:25}
+  ];
+  // Style header row
+  var range=XLSX.utils.decode_range(ws["!ref"]);
+  for(var col=range.s.c;col<=range.e.c;col++){
+    var cell=XLSX.utils.encode_cell({r:0,c:col});
+    if(ws[cell]){
+      ws[cell].s={font:{bold:true,color:{rgb:"FFFFFF"}},fill:{fgColor:{rgb:"3D3DB5"}}};
+    }
+  }
+  XLSX.utils.book_append_sheet(wb,"COMMANDES",ws);
+  XLSX.writeFile(wb,"ODELYS_Commandes_"+date+".xlsx");
 }
 
 function openGasConfig(){
@@ -1627,61 +1646,92 @@ function pgPLAN(){
   return h;
 }
 
-function renderMetroCircuit(cirs, col, livreur){
-  if(!cirs.length)return '<div class="em">Aucune livraison</div>';
+function renderMetroCircuit(cirs,col,livreur){
+  if(!cirs||!cirs.length)return '<div style="padding:8px;color:#aaa;font-size:12px;text-align:center">Aucune livraison</div>';
   var html='';
   cirs.forEach(function(cir,ci){
+    if(!cir||!cir.length)return;
     var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
     var cliv=cir.filter(function(c){return c.s==="Livree";});
-    var pct=Math.round(cload/livreur.cap*100);
-    var livPct=cir.length?Math.round(cliv.length/cir.length*100):0;
-    html+='<div class="cir-block">';
-    // Header
-    html+='<div class="cir-hd">'
-      +'<div class="cir-num" style="background:'+col+'">'+(ci+1)+'</div>'
-      +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt)">Circuit '+(ci+1)+'</div>'
-      +'<div style="font-size:10px;color:var(--mut)">'+cir.length+' arrets — '+cload+' bonb. / '+livreur.cap+' cap.</div></div>'
-      +'<div style="font-size:12px;font-weight:700;color:'+(livPct===100?'#4CAF50':'#E53935')+'">'+cliv.length+'/'+cir.length+' livres</div>'
-      +'</div>';
-    // Body
-    html+='<div class="cir-body">';
-    // Capacity bar
-    html+='<div class="cir-prog"><div class="cir-pf" style="width:'+Math.min(pct,100)+'%;background:'+col+'"></div></div>';
-    html+='<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-bottom:10px"><span>Capacite</span><span>'+cload+' / '+livreur.cap+' bonb.</span></div>';
-    // Metro stops
-    // Build gradient for line
-    var livCount=0,total=cir.length;
-    var firstNonLiv=cir.findIndex(function(c){return c.s!=="Livree";});
-    var gradPct=firstNonLiv<0?100:Math.round(firstNonLiv/total*100);
-    html+='<div class="metro-wrap">';
-    html+='<div class="metro-line" style="background:linear-gradient(to bottom,#4CAF50 '+gradPct+'%,#E53935 '+gradPct+'%)"></div>';
-    // Depot start
-    html+='<div class="m-stop"><div class="m-dot m-dot-d">D</div>'
-      +'<div class="m-cnt"><div class="m-name">Depot Odelys</div>'
-      +'<div class="m-addr">Miliana, Ain Defla</div>'
-      +'<div class="m-bonb"><span class="m-bdg m-bdg-d">Chargement '+cload+' bonb.</span></div></div></div>';
-    // Stops
-    cir.forEach(function(c,si){
-      var isLiv=c.s==="Livree";
-      html+='<div class="m-stop"><div class="m-dot '+(isLiv?'m-dot-g':'m-dot-r')+'">'+(si+1)+'</div>'
-        +'<div class="m-cnt"><div class="m-name">'+c.cn+'</div>'
-        +'<div class="m-addr">'+c.c+' — '+c.a.substring(0,38)+'</div>'
-        +'<div class="m-bonb"><span>'+c.q+' bonb.</span>'
-        +(isLiv?'<span class="m-bdg m-bdg-g">&#10003; Livre'+(c.bl?' — '+c.bl:'')+'</span>':'<span class="m-bdg m-bdg-r">En attente</span>')
-        +(c.dls&&c.dls!==td()?'<span style="font-size:10px;color:var(--b)">📅 '+c.dls+'</span>':'')
-        +(c.obs?'<span class="m-bdg" style="background:#FFF8E1;color:#854F0B">💬 '+c.obs+'</span>':'')
-        +'</div></div></div>';
-    });
-    // Depot return
-    html+='<div class="m-stop"><div class="m-dot m-dot-d">D</div>'
-      +'<div class="m-cnt"><div class="m-name">Retour Depot Odelys</div>'
-      +'<div class="m-addr">Fin circuit '+(ci+1)+'</div></div></div>';
-    html+='</div></div></div>';
-    // Recharge between circuits
-    if(ci<cirs.length-1){
-      var nextLoad=cirs[ci+1].reduce(function(s,c){return s+(+c.q||0);},0);
-      html+='<div class="m-recharg">&#8617; Retour depot — Rechargement circuit '+(ci+2)+' ('+nextLoad+' bonb.)</div>';
+    var pct=Math.min(100,Math.round(cload/(livreur.cap||100)*100));
+
+    if(ci>0){
+      html+='<div style="text-align:center;padding:4px 0;font-size:11px;color:'+col+';font-weight:700">&#8617; Rechargement depot — Circuit '+(ci+1)+' ('+cload+' bonb.)</div>';
     }
+
+    html+='<div style="background:white;border:1px solid #E0E0E0;border-radius:10px;margin-bottom:8px;padding:10px 12px">';
+
+    // Header
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<div style="width:22px;height:22px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">'+(ci+1)+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:#333">Circuit '+(ci+1)+' &mdash; '+cir.length+' arrets &mdash; '+cload+'/'+livreur.cap+' bonb.</div>'
+      +'<div style="margin-left:auto;font-size:11px;font-weight:700;color:'+(cliv.length===cir.length?'#4CAF50':'#E53935')+'">'+cliv.length+'/'+cir.length+' livres</div>'
+      +'</div>';
+
+    // Progress bar
+    html+='<div style="height:3px;background:#F0F0F0;border-radius:2px;margin-bottom:10px">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px"></div>'
+      +'</div>';
+
+    // Horizontal metro line
+    // Build all stops: D + clients + D
+    var stops=[{type:'D',label:'Depot'}];
+    cir.forEach(function(c,si){stops.push({type:'C',idx:si+1,cmd:c});});
+    stops.push({type:'D',label:'Depot'});
+
+    // Scrollable horizontal container
+    html+='<div style="overflow-x:auto;padding-bottom:4px">';
+    html+='<div style="display:flex;align-items:flex-start;min-width:max-content;gap:0">';
+
+    stops.forEach(function(stop,si){
+      var isLast=(si===stops.length-1);
+      var dotColor=stop.type==='D'?'#1A1A3E':(stop.cmd.s==='Livree'?'#4CAF50':'#E53935');
+      var dotBorder=stop.type==='D'?'#1A1A3E':(stop.cmd.s==='Livree'?'#4CAF50':'#E53935');
+
+      html+='<div style="display:flex;flex-direction:column;align-items:center;width:80px;flex-shrink:0">';
+      
+      // Dot + line row
+      html+='<div style="display:flex;align-items:center;width:100%;height:26px">';
+      // Left line
+      if(si>0){
+        var prevLiv=(stops[si-1].type==='C'&&stops[si-1].cmd.s==='Livree')||stops[si-1].type==='D';
+        html+='<div style="flex:1;height:3px;background:'+(stop.type==='D'||prevLiv?'#4CAF50':col)+'"></div>';
+      } else {
+        html+='<div style="flex:1"></div>';
+      }
+      // Dot
+      html+='<div style="width:26px;height:26px;border-radius:50%;background:'+dotColor+';border:2.5px solid white;box-shadow:0 0 0 2px '+dotBorder+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0">';
+      html+=stop.type==='D'?'D':(stop.cmd.s==='Livree'?'&#10003;':stop.idx);
+      html+='</div>';
+      // Right line
+      if(!isLast){
+        var nextStop=stops[si+1];
+        var nextLiv=(stop.type==='C'&&stop.cmd.s==='Livree')||stop.type==='D';
+        html+='<div style="flex:1;height:3px;background:'+(nextLiv?'#4CAF50':col)+'"></div>';
+      } else {
+        html+='<div style="flex:1"></div>';
+      }
+      html+='</div>'; // end dot row
+
+      // Label below dot
+      html+='<div style="text-align:center;padding:4px 2px 0;width:100%">';
+      if(stop.type==='D'){
+        html+='<div style="font-size:9px;font-weight:700;color:#1A1A3E">Depot</div>';
+      } else {
+        var c=stop.cmd;
+        var isLiv=c.s==='Livree';
+        html+='<div style="font-size:9px;font-weight:700;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:76px" title="'+c.cn+'">'+c.cn.substring(0,10)+(c.cn.length>10?'..':'')+'</div>';
+        html+='<div style="font-size:9px;color:#aaa">'+c.q+' bonb.</div>';
+        if(isLiv) html+='<div style="font-size:9px;color:#2E7D32;font-weight:700">'+(c.bl?c.bl:'Livre')+'</div>';
+        else html+='<div style="font-size:9px;color:#C62828">En attente</div>';
+      }
+      html+='</div>';
+      html+='</div>'; // end stop
+    });
+
+    html+='</div>'; // end flex
+    html+='</div>'; // end scroll
+    html+='</div>'; // end circuit card
   });
   return html;
 }
