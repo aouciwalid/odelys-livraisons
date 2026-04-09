@@ -753,8 +753,15 @@ function pgDB(){
       });
       h+='</div>';
     }
-    // Metro circuit view
-    h+=renderMetroCircuit(cirs,col,l);
+    if(cs.length){
+      h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">';
+      cirs.forEach(function(cir,ci){
+        h+='<button class="btn bsm btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">'
+          +'🗺 Circuit '+(ci+1)+' — '+cir.length+' arrets — '+cir.reduce(function(s,c){return s+(+c.q||0);},0)+' bonb.'
+          +'</button>';
+      });
+      h+='</div>';
+    }
     h+='</div>';
   });
   if(!any) h+='<div class="em">Aucune livraison affectee</div>';
@@ -1646,41 +1653,6 @@ function pgPLAN(){
   return h;
 }
 
-function renderMetroCircuit(cirs,col,livreur){
-  if(!cirs||!cirs.length)return "";
-  var h="";
-  cirs.forEach(function(cir,ci){
-    if(!cir||!cir.length)return;
-    var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
-    var cliv=cir.filter(function(c){return c.s==="Livree";}).length;
-    if(ci>0){
-      h+="<div style='text-align:center;padding:3px;margin:4px 0;font-size:11px;color:"+col+";font-weight:700;background:#F5F5FF;border-radius:6px'>Rechargement depot — Circuit "+(ci+1)+" ("+cload+" bonb.)</div>";
-    }
-    h+="<div style='border:1px solid #DDD;border-radius:9px;margin-bottom:8px;overflow:hidden'>";
-    h+="<div style='background:"+col+"22;padding:6px 11px;display:flex;align-items:center;gap:7px;border-bottom:1px solid #EEE'>";
-    h+="<div style='width:20px;height:20px;border-radius:50%;background:"+col+";color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center'>"+(ci+1)+"</div>";
-    h+="<div style='font-size:12px;font-weight:700;color:"+col+";flex:1'>Circuit "+(ci+1)+"</div>";
-    h+="<div style='font-size:11px;font-weight:700;color:"+(cliv===cir.length?"#2E7D32":"#C62828")+"'>"+cliv+"/"+cir.length+" — "+cload+" bonb.</div>";
-    h+="</div>";
-    cir.forEach(function(c,si){
-      var liv=c.s==="Livree";
-      var bg=liv?"#F1FFF1":"#FFFFFF";
-      var dc=liv?"#4CAF50":"#E53935";
-      h+="<div style='display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid #F5F5F5;background:"+bg+"'>";
-      h+="<div style='width:20px;height:20px;border-radius:50%;background:"+dc+";color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0'>"+(si+1)+"</div>";
-      h+="<div style='flex:1;min-width:0'>";
-      h+="<div style='font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>"+c.cn+"</div>";
-      h+="<div style='font-size:10px;color:#999'>"+c.c+"</div>";
-      h+="</div>";
-      h+="<div style='font-size:12px;font-weight:700;color:"+dc+"'>"+c.q+" bonb.</div>";
-      if(liv&&c.bl) h+="<div style='font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:10px'>"+c.bl+"</div>";
-      if(!liv) h+="<div style='font-size:10px;background:#FFEBEE;color:#C62828;padding:2px 6px;border-radius:10px'>Attente</div>";
-      h+="</div>";
-    });
-    h+="</div>";
-  });
-  return h;
-}
 
 function delCmd(id){
   if(!confirm("Supprimer cette commande ?"))return;
