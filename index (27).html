@@ -1654,84 +1654,32 @@ function renderMetroCircuit(cirs,col,livreur){
     var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
     var cliv=cir.filter(function(c){return c.s==="Livree";});
     var pct=Math.min(100,Math.round(cload/(livreur.cap||100)*100));
-
     if(ci>0){
-      html+='<div style="text-align:center;padding:4px 0;font-size:11px;color:'+col+';font-weight:700">&#8617; Rechargement depot — Circuit '+(ci+1)+' ('+cload+' bonb.)</div>';
+      html+='<div style="text-align:center;padding:3px 0;margin:4px 0;font-size:11px;color:'+col+';font-weight:700;background:#F5F5FF;border-radius:6px">&#8617; Rechargement depot &mdash; Circuit '+(ci+1)+' ('+cload+' bonb.)</div>';
     }
-
-    html+='<div style="background:white;border:1px solid #E0E0E0;border-radius:10px;margin-bottom:8px;padding:10px 12px">';
-
+    html+='<div style="border:1px solid #E0E0E0;border-radius:9px;margin-bottom:8px;overflow:hidden">';
     // Header
-    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-      +'<div style="width:22px;height:22px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">'+(ci+1)+'</div>'
-      +'<div style="font-size:12px;font-weight:700;color:#333">Circuit '+(ci+1)+' &mdash; '+cir.length+' arrets &mdash; '+cload+'/'+livreur.cap+' bonb.</div>'
-      +'<div style="margin-left:auto;font-size:11px;font-weight:700;color:'+(cliv.length===cir.length?'#4CAF50':'#E53935')+'">'+cliv.length+'/'+cir.length+' livres</div>'
+    html+='<div style="background:'+col+'18;padding:7px 11px;display:flex;align-items:center;gap:7px;border-bottom:1px solid #E8E8E8">'
+      +'<div style="width:20px;height:20px;border-radius:50%;background:'+col+';color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">'+(ci+1)+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:'+col+';flex:1">Circuit '+(ci+1)+'</div>'
+      +'<div style="font-size:11px;color:'+(cliv.length===cir.length?'#2E7D32':'#C62828')+';font-weight:700">'+cliv.length+'/'+cir.length+' livres &mdash; '+cload+' bonb.</div>'
       +'</div>';
-
-    // Progress bar
-    html+='<div style="height:3px;background:#F0F0F0;border-radius:2px;margin-bottom:10px">'
-      +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px"></div>'
-      +'</div>';
-
-    // Horizontal metro line
-    // Build all stops: D + clients + D
-    var stops=[{type:'D',label:'Depot'}];
-    cir.forEach(function(c,si){stops.push({type:'C',idx:si+1,cmd:c});});
-    stops.push({type:'D',label:'Depot'});
-
-    // Scrollable horizontal container
-    html+='<div style="overflow-x:auto;padding-bottom:4px">';
-    html+='<div style="display:flex;align-items:flex-start;min-width:max-content;gap:0">';
-
-    stops.forEach(function(stop,si){
-      var isLast=(si===stops.length-1);
-      var dotColor=stop.type==='D'?'#1A1A3E':(stop.cmd.s==='Livree'?'#4CAF50':'#E53935');
-      var dotBorder=stop.type==='D'?'#1A1A3E':(stop.cmd.s==='Livree'?'#4CAF50':'#E53935');
-
-      html+='<div style="display:flex;flex-direction:column;align-items:center;width:80px;flex-shrink:0">';
-      
-      // Dot + line row
-      html+='<div style="display:flex;align-items:center;width:100%;height:26px">';
-      // Left line
-      if(si>0){
-        var prevLiv=(stops[si-1].type==='C'&&stops[si-1].cmd.s==='Livree')||stops[si-1].type==='D';
-        html+='<div style="flex:1;height:3px;background:'+(stop.type==='D'||prevLiv?'#4CAF50':col)+'"></div>';
-      } else {
-        html+='<div style="flex:1"></div>';
-      }
-      // Dot
-      html+='<div style="width:26px;height:26px;border-radius:50%;background:'+dotColor+';border:2.5px solid white;box-shadow:0 0 0 2px '+dotBorder+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0">';
-      html+=stop.type==='D'?'D':(stop.cmd.s==='Livree'?'&#10003;':stop.idx);
+    // Stops list
+    cir.forEach(function(c,si){
+      var isLiv=c.s==='Livree';
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid #F5F5F5;background:'+(isLiv?'#F9FFF9':'white')+'">'
+        +'<div style="width:20px;height:20px;border-radius:50%;background:'+(isLiv?'#4CAF50':'#E53935')+';color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(si+1)+'</div>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:12px;font-weight:700;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c.cn+'</div>'
+        +'<div style="font-size:10px;color:#aaa">'+c.c+'</div>'
+        +'</div>'
+        +'<div style="font-size:12px;font-weight:700;color:'+(isLiv?'#2E7D32':'#C62828');html+='">';
+      html+=c.q+' bonb.</div>';
+      if(isLiv&&c.bl) html+='<div style="font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:10px">'+c.bl+'</div>';
+      if(!isLiv) html+='<div style="font-size:10px;background:#FFEBEE;color:#C62828;padding:2px 6px;border-radius:10px">En attente</div>';
       html+='</div>';
-      // Right line
-      if(!isLast){
-        var nextStop=stops[si+1];
-        var nextLiv=(stop.type==='C'&&stop.cmd.s==='Livree')||stop.type==='D';
-        html+='<div style="flex:1;height:3px;background:'+(nextLiv?'#4CAF50':col)+'"></div>';
-      } else {
-        html+='<div style="flex:1"></div>';
-      }
-      html+='</div>'; // end dot row
-
-      // Label below dot
-      html+='<div style="text-align:center;padding:4px 2px 0;width:100%">';
-      if(stop.type==='D'){
-        html+='<div style="font-size:9px;font-weight:700;color:#1A1A3E">Depot</div>';
-      } else {
-        var c=stop.cmd;
-        var isLiv=c.s==='Livree';
-        html+='<div style="font-size:9px;font-weight:700;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:76px" title="'+c.cn+'">'+c.cn.substring(0,10)+(c.cn.length>10?'..':'')+'</div>';
-        html+='<div style="font-size:9px;color:#aaa">'+c.q+' bonb.</div>';
-        if(isLiv) html+='<div style="font-size:9px;color:#2E7D32;font-weight:700">'+(c.bl?c.bl:'Livre')+'</div>';
-        else html+='<div style="font-size:9px;color:#C62828">En attente</div>';
-      }
-      html+='</div>';
-      html+='</div>'; // end stop
     });
-
-    html+='</div>'; // end flex
-    html+='</div>'; // end scroll
-    html+='</div>'; // end circuit card
+    html+='</div>';
   });
   return html;
 }
