@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>ODELYS Livraisons</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--b:#3D3DB5;--bd:#2B2B8A;--bl:#EBEBFF;--p:#E5007D;--g:#72B81E;--gd:#4A8010;--gl:#EAF5D0;--gray:#F5F5FA;--bdr:#E0E0EF;--txt:#1A1A3E;--mut:#7070A0}
+body{font-family:system-ui,sans-serif;font-size:14px;color:var(--txt);background:var(--gray)}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.top{background:var(--bd);display:flex;align-items:center;gap:10px;padding:0 14px;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.logi{width:36px;height:36px;border-radius:50%;background:white;overflow:hidden;padding:2px;flex-shrink:0}
+.logi img{width:100%;height:100%;object-fit:contain}
+.brand{font-size:17px;font-weight:800;letter-spacing:1.5px;color:white}
+.brand b{color:#E5007D}
+.brand small{display:block;font-size:9px;letter-spacing:.5px;color:rgba(255,255,255,.4);font-weight:400}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:7px}
+.sdot{width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block;cursor:pointer;flex-shrink:0}
+.sok{background:#72B81E}.serr{background:#E53935}.sbsy{background:#FB8C00;animation:p .8s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.chip{background:#E5007D;color:white;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700}
+.bge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:700}
+.bga{background:#72B81E;color:white}.bgl{background:#FB8C00;color:white}
+.tabs{background:var(--b);display:flex;overflow-x:auto;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:11px 14px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:none;color:rgba(255,255,255,.5);border-bottom:2.5px solid transparent;white-space:nowrap}
+.tab.on{color:white;border-bottom-color:#E5007D;background:rgba(255,255,255,.08)}
+.pg{padding:1rem;flex:1}
+.card{background:white;border:1px solid var(--bdr);border-radius:12px;padding:1rem;margin-bottom:.75rem}
+.shd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;flex-wrap:wrap;gap:8px}
+.g4{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:.75rem}
+@media(min-width:480px){.g4{grid-template-columns:repeat(4,1fr)}}
+.kc{background:white;border:1px solid var(--bdr);border-radius:10px;padding:11px 12px;position:relative;overflow:hidden}
+.ka{position:absolute;top:0;left:0;width:3px;height:100%}
+.kl{font-size:11px;color:var(--mut);margin-bottom:3px}
+.kv{font-size:24px;font-weight:800;line-height:1}
+.btn{padding:7px 13px;border-radius:8px;border:1px solid var(--bdr);background:white;color:var(--txt);font-size:13px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.btn:active{transform:scale(.97)}
+.btnb{background:var(--b);color:white;border-color:var(--b)}
+.btnp{background:#E5007D;color:white;border-color:#E5007D}
+.btng{background:var(--g);color:white;border-color:var(--g)}
+.btno{background:#FB8C00;color:white;border-color:#FB8C00}
+.bsm{padding:6px 12px;font-size:12px}.bxs{padding:3px 8px;font-size:11px}
+.or{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:9px 11px;border:1px solid var(--bdr);border-radius:9px;margin-bottom:6px;background:white}
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.tag-ap{background:#E3F2FD;color:#1565C0}.tag-pr{background:var(--bl);color:var(--b)}
+.tag-ec{background:#E8F5E9;color:#2E7D32}.tag-re{background:#FFF3E0;color:#E65100}
+.tag-an{background:#F5F5F5;color:#9E9E9E}.tag-lv{background:var(--gl);color:var(--gd)}
+.pri-n{background:#F5F5F5;color:#7070A0}.pri-i{background:#FFF8E1;color:#F57F17}
+.pri-c{background:#FFEBEE;color:#C62828}
+.fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:110px;margin-bottom:9px}
+.fg label{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+input,select,textarea{padding:8px 11px;border:1px solid var(--bdr);border-radius:8px;background:white;color:var(--txt);font-size:14px;width:100%;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--b);box-shadow:0 0 0 3px rgba(61,61,181,.08)}
+.frow{display:flex;gap:8px;flex-wrap:wrap}
+.ovl{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(27,27,90,.5);display:none;align-items:flex-end;justify-content:center;z-index:1000;backdrop-filter:blur(2px)}
+.ovl.show{display:flex}
+@media(min-width:600px){.ovl{align-items:center}}
+.md{background:white;border-radius:16px 16px 0 0;padding:1.5rem;width:100%;max-width:500px;max-height:92vh;overflow-y:auto}
+@media(min-width:600px){.md{border-radius:16px}}
+.mbar{width:36px;height:3px;background:var(--bdr);border-radius:2px;margin:0 auto 1.25rem}
+.mtl{font-size:15px;font-weight:800;color:var(--b);margin-bottom:1rem}
+.acw{position:relative}
+.acd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid var(--bdr);border-radius:10px;max-height:200px;overflow-y:auto;z-index:200;box-shadow:0 8px 24px rgba(61,61,181,.15);display:none}
+.acd.on{display:block}
+.aci{padding:9px 13px;cursor:pointer;border-bottom:.5px solid var(--bdr);font-size:13px}
+.aci:hover{background:var(--bl)}
+.aci b{color:var(--b);display:block}.aci small{color:var(--mut)}
+.lv-wrap{background:#EEEEF8}
+.lv-hd{padding:14px 16px;color:white}
+.sc{background:white;margin:10px;border-radius:13px;box-shadow:0 2px 8px rgba(61,61,181,.1);overflow:hidden}
+.sch{padding:11px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr)}
+.snum{width:28px;height:28px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.scb{padding:13px 14px}
+.fbox{border:1.5px solid var(--bdr);border-radius:9px;padding:7px 9px}
+.fbox:focus-within{border-color:#E5007D}
+.fbox label{font-size:10px;color:var(--mut);font-weight:700;text-transform:uppercase;display:block;margin-bottom:3px}
+.fbox input{border:none;padding:0;font-size:18px;font-weight:800;color:var(--txt);text-align:center;background:none;width:100%}
+.fbox input:focus{outline:none;box-shadow:none}
+.lv-done{background:var(--gl);margin:5px 10px;border-radius:9px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gd)}
+.lv-rl{background:var(--b);margin:5px 10px;padding:10px 14px;border-radius:9px;color:white;font-size:12px;font-weight:700;text-align:center}
+.clrow{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--bdr);border-radius:9px;margin-bottom:5px;background:white}
+.em{text-align:center;padding:2.5rem;color:var(--mut);font-size:13px}
+.al{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:.75rem;border-left:3px solid;line-height:1.5}
+.al-w{background:#FFF8E1;color:#F57F17;border-color:#FFB300}
+.al-ok{background:var(--gl);color:var(--gd);border-color:var(--g)}
+.al-i{background:var(--bl);color:var(--b);border-color:var(--b)}
+.al-r{background:#FFEBEE;color:#C62828;border-color:#E53935}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;padding:2rem;background:linear-gradient(135deg,var(--bd) 0%,var(--b) 100%)}
+.login-card{background:white;border-radius:16px;padding:2rem;width:100%;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,.3)}
+.login-logo{display:flex;justify-content:center;margin-bottom:1.5rem}
+.login-logo img{width:72px;height:72px;border-radius:50%}
+.login-title{font-size:18px;font-weight:800;color:var(--b);text-align:center;margin-bottom:.25rem}
+.login-sub{font-size:12px;color:var(--mut);text-align:center;margin-bottom:1.5rem}
+.lbtn{width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:.75rem}
+.lba{background:var(--b);color:white}.lbl{background:#FB8C00;color:white}
+.livsel{width:100%;padding:11px;border:1px solid var(--bdr);border-radius:10px;font-size:14px;font-weight:600;color:var(--txt);background:white;margin-bottom:.75rem}
+.cgrp{background:white;border:1px solid var(--bdr);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.cgrp-hd{padding:9px 12px;display:flex;align-items:center;gap:8px;background:var(--bl)}
+.cgrp-bd{padding:8px}
+.cirb{width:100%;padding:9px 12px;border:1px solid var(--bdr);border-radius:8px;background:white;cursor:pointer;font-size:12px;font-weight:700;color:var(--b);display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.cirb:hover{background:var(--bl)}
+.lv-card{background:white;border:1px solid var(--bdr);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.map-container{border-radius:12px;overflow:hidden;border:1px solid var(--bdr);height:70vh;min-height:400px;background:#f0f0f0}
+.map-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:.75rem}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+</style>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCIWs39XWYrLeue9Q9nUfuJAnueK-j1QAw"></script>
+</head>
+<body>
+<div id="root"></div>
+<div class="ovl" id="ov"><div class="md" id="mdc"></div></div>
+<script>
+function stTag(s){
+  var m={"Livree":["#E8F5E9","#2E7D32","Livre"],"Annulee":["#F5F5F5","#757575","Annule"],"En cours":["#E3F2FD","#1565C0","En cours"],"Programmee":["#EBEBFF","#3D3DB5","Programme"],"A programmer":["#FFF8E1","#F57F17","A programmer"],"Retardee":["#FFF3E0","#E65100","Retarde"]};
+  var v=m[s]||["#F5F5F5","#666",s||""];
+  return '<span style="background:'+v[0]+';color:'+v[1]+';padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">'+v[2]+'</span>';
+}
+function priTag(p){
+  var m={"Critique":["#FFEBEE","#C62828","Critique"],"Importante":["#FFF3E0","#E65100","Importante"],"Normale":["#F5F5F5","#757575","Normale"]};
+  var v=m[p]||m["Normale"];
+  return '<span style="background:'+v[0]+';color:'+v[1]+';padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">'+v[2]+'</span>';
+}
+// ═══ CONFIG ═════════════════════════════════════
+var DEPOT_ADDR="36.685984,2.89";
+var ADMIN_PWD="odelys2024";
+var FB_URL="https://odelys-c6610-default-rtdb.europe-west1.firebasedatabase.app";
+var GAS_URL=""; // URL Google Apps Script (optionnel - pour historique Sheets)
+var SYNC_IV=30000;
+
+// ═══ LIVREURS ════════════════════════════════════
+var LV=[
+  {id:"L1",n:"MOUSTAPHA",v:"Fourgon",cap:100,tel:"",zone:""},
+  {id:"L2",n:"MOHAMED",v:"Fourgon",cap:100,tel:"",zone:""},
+  {id:"L3",n:"BILLEL",v:"Fourgon",cap:100,tel:"",zone:""},
+  {id:"L4",n:"DFK",v:"Petit camion",cap:50,tel:"",zone:""},
+  {id:"L5",n:"10T",v:"Camion 10T",cap:510,tel:"",zone:""}
+];
+
+// ═══ CLIENTS (248 clients reels) ════════════════
+var CL=[];
+(function(){
+var D=[
+["CLI-0001","2MNUMERIK","Alger","Hydra","30 rue petite provence coté hydra 16016, Algérie",""],
+["CLI-0002","Afia International Algeria Spa","Oran","Hassi Bounif","4,165 Et B180 Hassi Bounif,Oran, Alger, Algérie",""],
+["CLI-0003","Agence Nationale de Sécurité Sanitaire /Présidence","Alger","El Mouradia","Place Mohamed Seddik Benyahia - Présidence de la République- El Mouradia alger, Alger, Alg",""],
+["CLI-0004","Ahmed Hamadi","Alger","Dely Ibrahim","Propriete Zaoui Mohamed BATB3 N166 Dely Brahim Alger DELY BRAHIM ALGER, Alger, Algérie",""],
+["CLI-0005","Ahras Industry","Alger","Oued Smar","Zone Industrielle Oued Smar lot N°17",""],
+["CLI-0006","AIR ALGERIE DIVISION MAINTENANCE & REPARATION AERONEFS","Alger","Dar El Beida","Aéroport International Houari Boumediene Dar El Beida Algérie",""],
+["CLI-0007","AIR FRANCE","Alger","Dar El Beida","Aéroport d’Alger T4, Alger, Algérie",""],
+["CLI-0008","ALD AUTOMOTIVE ALGERIE SPA","Alger","Mohammadia","Tour GENEVA, 13ème étage - les Pins Maritimes - El Mohammadia - Alger",""],
+["CLI-0009","Algerian Gulf Life Insurance Company SPA AGLIC","Alger","Cheraga","Centre Commercial et d'affaires El-Qods Niv 04 Cheraga Alger 16035",""],
+["CLI-0010","ALGERIAN INVESTMENT FUND AIF","Alger","El Madania","71 Rue Mohammed Belkacemi El Madania Alger, Alger, Alger, Algérie",""],
+["CLI-0011","ALGIERS MARRIOTT HOTEL","Alger","Bab Ezzouar","SPA TRUST REAL ESTATE Nouveau quartier D'affaires BAB Ezzouar Alger Algérie, Alger, Algéri",""],
+["CLI-0012","Ambassade Danemark","Alger","Ben Aknoun","07, Chemin Doudou Mokhtar Ben Aknoun Alger, Alger, Algérie",""],
+["CLI-0013","Ambassade de France en Algérie","Alger","Hydra","25, chemin Abdelkader Gadouche, Hydra, Alger, Alger, Algérie",""],
+["CLI-0014","Ambassade de l'INDE","Alger","Hydra","Ambassade de l'INDE",""],
+["CLI-0015","Ambassade de Norvege","Alger","Ben Aknoun","7, chemin Doudou Mokhtar Ben Aknoun, Alger, Algérie",""],
+["CLI-0016","AMBASSADE DU BRESIL","Alger","El Biar","55 BIS CHEMIN CHEIKH BACHIR EL IBRAHIMI, Alger, Algérie",""],
+["CLI-0017","Ambassade du Portugal","Alger","El Biar","40 Chem. El Mouiz Ibn Badis, El Biar 16000, Alger, Algérie",""],
+["CLI-0018","Ambassade du Royaume  de Belgique à Alger","Alger","El Biar","Chemin Youcef Tayebi 22,, Alger, Algérie",""],
+["CLI-0019","Amnesty International Algerie","Alger","El Biar","24 Boulevard colonel bougara el Biar",""],
+["CLI-0020","Arab Banking Corporation - Alger","Alger","Bir Mourad Rais","38 Avenue des trois fréres bouaddou Bir Mourad Rais, Alger Algérie, 1600 Bir mourad rais, ",""],
+["CLI-0021","Arab Banking Corporation Ageence  DAR EL BEIDA","Alger","Dar El Beida","Dar el beida Alger",""],
+["CLI-0022","ARKAS ALGERIE SPA","Alger","Hydra","7 Route de Sidi Yahia,Lot B, Alger, Algérie",""],
+["CLI-0023","Artissimo Hub Créatif","Alger","Alger Centre","Rue Didouche Mourad 28, Alger, Algérie",""],
+["CLI-0024","Audit Consulting Partners (ACP)","Alger","Birkhadem","145 Résidence El Andalus 1er Etage, Alger, Algérie",""],
+["CLI-0025","Autorité de Régulation des Hydrocarbures (ARH)","Alger","El Biar","sis au 05 et 65, Boulevard du 11 Décembre 1960 El Biar – ALGER",""],
+["CLI-0026","AXA Assurances Algérie","Alger","El Biar","Lotissement 11 decembre 1960 lots 08 et 12, El Biar,, Alger, Algérie",""],
+["CLI-0027","Bayer Algérie SPA","Alger","Bab Ezzouar","Oriental Business Park 3ème étage Quariter d'affaire, Alger, Algérie",""],
+["CLI-0028","BERLITZ ALGERIE SPA","Alger","Hydra","38, lot de la Petite Provence Hydra - ALGER 16035, Alger, Algérie",""],
+["CLI-0029","Biomérieux","Alger","Dely Ibrahim","02 Route Ouled-Fayet (Cheraga office-Holiday-Holiday Inn) 5eme etage, Dely Ibrahim, Algeri",""],
+["CLI-0030","Bolloré Transport et Logistics SPA Algérie","Alger","Bab Ezzouar","Business center CMA CGM 5 eme étages Bab Ezzouar, Alger, Alger, Algérie",""],
+["CLI-0031","British American tobacco Algérie SPA","Alger","Ouled Fayet","Route de Ouled Fayet Zone d activité EL Omrane Ilot 789Lot 04,Cheraga Algeria, Alger, Algé",""],
+["CLI-0032","British Council","Alger","Hydra","40 Rue des Frères Benali Abdellah Ex Parmentier Hydra",""],
+["CLI-0033","Bureau de Liaison ou / BL Doehler France Sarl","Alger","Hydra","28, Micro-zone d’activité,, Alger, Algérie",""],
+["CLI-0034","CAARAMA ASSURANCE DE PERSONNES","Alger","Bir Mourad Rais","54, Avenue des frères Boudaoud, Alger, Algérie",""],
+["CLI-0035","CEGELEC ALGERIE - ACTEMIUM","Alger","Ben Aknoun","18 Rue Mustapha Khalef, Ben Aknoun, Algérie., Algérie",""],
+["CLI-0036","Ceva Santé Animale SPA (Algerie)","Alger","Rahmania","Z.A El Boustène - Rahmania",""],
+["CLI-0037","Cevital SPA","Alger","Kouba","Ilot D n°6 ZHUN, Garidi II,Kouba-Alger, Algérie, Alger, Algérie",""],
+["CLI-0038","CITAL SPA","Annaba","El Bouni","Route d'El Hadjar El Bouni 23000 Annaba",""],
+["CLI-0039","CITIBANK  N.A  ALGERIE","Alger","Bab Ezzouar","Immeuble le KSAR 34/35 Quartier d'affaires, Alger, Algérie",""],
+["CLI-0040","CMA CGM ALGERIE","Alger","Bab Ezzouar","Quartier des Affaires Bab Ezzouar CP 16 024-Alger BAB EZZOUAR ALGER, Alger, Algérie",""],
+["CLI-0041","COMET MEDICAL","Alger","Bir Touta","Z.I LES ZOUINE BABA ALI-ALGER, Alger, Algérie",""],
+["CLI-0042","CREG Commission de Régulation de l’Electricité et du Gaz","Alger","Hydra","Immeuble du Ministère de l’Energie et des Mines Tour B - Val d’Hydra - Alger",""],
+["CLI-0043","DANONE DJURDJURA ALGERIE (SIEGE)","Alger","Mohammadia","Algeria Business Centre Pins Maritime, Mohammadia, Algiers, Alger, Algérie",""],
+["CLI-0044","DANONE DJURDJURA ALGERIE SPA (TASSALA)","Alger","Mohammadia","Algeria Business centre Pins-El mohamadia",""],
+["CLI-0045","Dar al Arabia SPA","Alger","Rahmania","N°78 A Zone d activité el Bousténe Sidi Abdellah Rahmania.Alger",""],
+["CLI-0046","Data Art Partners","Alger","Cheraga","Chemin de bouchaoui n 06 coopératif 496 section 01 1er et 2e étage, Ouled Fayet",""],
+["CLI-0047","DIFEX SPA","Alger","Reghaia","Z.I Reghaia Lot N°6 Division N°37 Reghaia Alger 16112 Algérie",""],
+["CLI-0048","Djaz RP SARL","Alger","Cheraga","Villa 2, Lot. Benhaddadi, Dar Diaf, Cheraga, Algiers, Algeria",""],
+["CLI-0049","Draco","Boumerdes","Boumerdes","LOT N°374 Secteur N°06 Ouled Brahim Hammadi Boumerdes, Alger, Algérie",""],
+["CLI-0050","DTM CARE","Alger","Bab Ezzouar","CENTRE COMMERCIAL ET DE LOISIRS DE BAB EZZOUAR LOTS 43 ILOT 8 QUA",""],
+["CLI-0051","EASYFAIRS ALGERIA","Alger","Ben Aknoun","11 chemin doudou Mokhtar, centre d'affaires zéphyr, 2éme ET, Ben-Aknoun, Alger • Algeria, ",""],
+["CLI-0052","Ecole supérieure Algerienne des Affaires","Alger","Mohammadia","Les pins Maritimes 16130 Mouhammadia.Alger, Alger, Algérie",""],
+["CLI-0053","Emerson Process Mangement","Alger","Hydra","43 RUE DES JARDIN 16035, 00 Hydra, Alger, Algérie",""],
+["CLI-0054","EMIRATES ALGERIA","Alger","Dar El Beida","aeroport international Houari Boumediene terminal west , 00 DAR EL BEIDA, Alger, Algérie",""],
+["CLI-0055","Entreprise Interpath Services","Alger","Bab Ezzouar","Oriental business Park 02, étage N°04, Bab Ezzouar, Alger",""],
+["CLI-0056","Entreprise Nationale de Récupération (ENR)","Alger","","16000 Alger, Algérie",""],
+["CLI-0057","EPE/SPA/FRIGOMEDIT","Alger","Rouiba","Rue Ferradj & Zabana ex les castores Rouiba.Alger, Rouiba, Alger, Algérie",""],
+["CLI-0058","Equinor Algeria AS Succursale","Alger","Ben Aknoun","01 Rue Doudou Mokhtar, Ben Aknoun 16028 Alger",""],
+["CLI-0059","ETAC Entreprise de Transport Algérien par Câbles s.p.a","Alger","Kouba","Chemin de Wilaya n°13, Quatre Chemins – Kouba – Alger, Alger, Algérie",""],
+["CLI-0060","EURL  MAGPHARM LOGISTIQUE","Alger","Birkhadem","62 Rue des fréres Zotale Birkhadem, Alger, Algérie",""],
+["CLI-0061","EURL AKSA Générateurs Algérie","Alger","Dely Ibrahim","Adresse: Coopérative de bâtiment N°104 Hai El Bina DELY BRAHIM ALGER",""],
+["CLI-0062","EURL CAPAGO ALGER","Alger","Mohammadia","Route nationale 24 Pins Maritimes commune de Mohammadia alger",""],
+["CLI-0063","Eurl Dercavo","Alger","Dely Ibrahim","Ain Allah coop el mostakbel ilot 285 section 2 RDC Etage 1 Deley Brahim Alger",""],
+["CLI-0064","EURL Diebold Nixdorf","Alger","Hydra","Résidance les Crétes Rue B, Section 21 ILOT n° 58 ,LOT 94 ,Local A, Algérie",""],
+["CLI-0065","EURL E.C.S.L ALGERIE","Blida","Blida","Rue 1 Novembre G.P N°253, Section N°10,Magasin A,0/OYG, Blida",""],
+["CLI-0066","Eurl Ipsen Logistics","Alger","Bir Mourad Rais","8, Rue Gharnata ex Aquitaine “Les Sources” · 16300 Bir Mourad Rais – Alger · Algeria, Alge",""],
+["CLI-0067","EURL KADRI TOURISME & Hotellerie KTH","Blida","Ouled Yaich","75 Cité japonaise ouled yaich BLIDA",""],
+["CLI-0068","EURL LEGAL DOCTRINE ALGERIE","Alger","Dely Ibrahim","Coopérative Immobilière El Bouroudj, Section 02, ilot N°428 Ain Allah, Dely Ibrahim, Alger",""],
+["CLI-0069","EURL Lilium Pharma Algerie","Alger","Maalma","Lp production, Mahelma",""],
+["CLI-0070","EURL MAZARS AUDIT ALGERIE","Alger","Mohammadia","Tour Algeria Business Center Pins maritimes - Mohammadia Alger Algérie, Alger, Algérie",""],
+["CLI-0071","EURL NEON FLASH COMPANY","Alger","Bordj El Kiffan","07, Cité Kaidi copro n°110, Bordj El Kiffan, Alger, Alger, Alger, Algérie",""],
+["CLI-0072","EURL PACO SERVICE","Alger","El Biar","AIN ZABOUGA VILLA N°07 ELBIAR",""],
+["CLI-0073","Eurl Premium Pharmacer","Alger","El Mouradia","24 Rue Mohamed Bachouche el Mouradia, Algérie",""],
+["CLI-0074","Eurl Premium Pharmaser","Alger","El Mouradia","24 Rue Mohamed BACHOUCHE El Mouradia– ALGER 16035",""],
+["CLI-0075","EURL Promolife Plus (REGUS)","Alger","El Biar","Boulevard 11 Décembre 1960,section 32 Lot 61 et 64 El Biar Alger, Alger, Algérie",""],
+["CLI-0076","EURL SODEXO ALGERIE","Alger","Hydra","VAL D'HYDRA RESIDENCE CHAABANI LOT 15 GP 29 BT E08 2 EME ETAGE HYDRA ALGER",""],
+["CLI-0077","EURL SOLUTION LOGISTIQUE","Alger","Alger Centre","RUE ABOU HAMMOU MOUSSA N°06 LOTN°12",""],
+["CLI-0078","Eurl Stadler Algerie","Alger","Hussein Dey","14 BIS Atelier de maintenance Rue de l'ALN Caroubier, Algérie",""],
+["CLI-0079","EURL STAGMA CONSTRUCTION","Alger","Cheraga","VILLA N° 349LOT 5 BOUCHAOUI 3-Cheraga Alger, Alger, Algérie",""],
+["CLI-0080","EURL YASSIR","Alger","Bir Mourad Rais","Zone d'activité Said Hamdine, Lot n 11, Bir Mourad Rais Alger, Alger, Algérie",""],
+["CLI-0081","Fette Compacting  North - West Africa","Alger","Cheraga","Résidence des jardins BLOC B N°1 Cheraga Alger - Algérie",""],
+["CLI-0082","Flashcar SARL","Alger","Staoueli","06 cité des abattoirs Staoueli 16062, Alger, Algérie",""],
+["CLI-0083","Fonds de Garantie et de Caution Mutuelle de la Promotion Imm","Alger","Ouled Fayet","Zone administrative, BP 66 Quater, Ouled Fayet, Alger, Alger, Algérie",""],
+["CLI-0084","FRUITAL SPA","Alger","Rouiba","Zone Industrielle , Route Nationale 5, Alger, Algérie",""],
+["CLI-0085","GB Relation","Alger","Mohammadia","EL DJNINA CENTRE DE COMMERCE ET D'AFFAIRE LOT 11 GP 10 SEC 1322 etage 9, MOHAMMADIA, Alger",""],
+["CLI-0086","GIG Algeria","Alger","Hussein Dey","01er Rue Tripoli Hussein Dey, Alger, Algérie",""],
+["CLI-0087","GIZ RADIO","Alger","El Biar","39 Rue Mohamed Khoudi - El Biar, Alger, Algérie, 1600 El biar, Alger, Algérie",""],
+["CLI-0088","Gomycode","Alger","Hydra","Lot N°3, Chem. de Val d'Hydra, El Biar 16016, Alger, Algérie",""],
+["CLI-0089","Groupe Chrea Boissons Gazeuses","Blida","Beni Mered","01,route d'Alger Khazrouna Blida, 000 Khazrouna, Blida, Algérie",""],
+["CLI-0090","GROUPE INDUSTRIEL DES CIMENTS D'ALGERIE","Blida","Meftah","ROUTE DE DAR EL BAIDA 02B0017567, Algérie",""],
+["CLI-0091","Groupe Sennia","Alger","Kouba","Domaine Garidi,coop Ennasr N°86 les Vergers, Alger, Algérie",""],
+["CLI-0092","GROUPE TELECOM ALGERIE","Alger","Bab Ezzouar","ZONE DES AFFAIRES 18B1013013, Bab Ezzouar, Algérie",""],
+["CLI-0093","GSK ALGERIE SPA","Boumerdes","Boudouaou","Zone industrielle Boudouaou Est.35400 Boumerdes Algeria",""],
+["CLI-0094","GTS PHONE SARL","Alger","Birkhadem","Annex villa n°30 coopérative Ennahda.Birkhadem.Alger, Algérie",""],
+["CLI-0095","HAND TO HAND Services aux personnes et aux entreprises","Alger","Ouled Fayet","siége de la sarl boehringer sis à coopérative el yasmine ouled fayet , Alger, Algérie",""],
+["CLI-0096","HOTEL BARKAT","Alger","Baraki","section n302 baraki alger, Baraki, Algérie",""],
+["CLI-0097","Hotel Hydra - Best Hotel in Algiers","Alger","Hydra","Bd Benyoucef Benkhedda, ( ex Sidi Yahia) Hydra,, Alger, Algérie",""],
+["CLI-0098","Hotel Tulip inn naya","Alger","Bab Ezzouar","Route de l'université, Cité 5 juillet, Bab Ezzouar",""],
+["CLI-0099","I2B SPA","Alger","Kouba","06 Rue Cherifi Ahmed, Kouba",""],
+["CLI-0100","Icosnet","Alger","Cheraga","Centre des affaires el Qods 6 niveau de tour centrale, Algérie",""],
+["CLI-0101","IFFCO FOODSTUFFS SPA","Alger","Rouiba","ZONE INDUSTRIELLE PARTIE 07GROUPE DE PROPRIÉTÉ 366, LOT 31Rouiba, Alger",""],
+["CLI-0102","IMS MAGHREB  SPA","Alger","Kouba","Coopérative les iris n°65-Ain Soltan Kouba6.Alger",""],
+["CLI-0103","INSAG Business School","Alger","Hydra","57 Rue Abri Arezki, Hydra,, Alger, Algérie",""],
+["CLI-0104","INSTITUT DE DROIT DES AFFAIRES","Alger","Dely Ibrahim","Coopérative Immobilière El Bouroudj, Section 02, ilot N°428 Ain Allah, Dely Ibrahim, Alger",""],
+["CLI-0105","Institut Français d'Alger","Alger","Alger Centre","7 Rue Hassani Issad Alger centre, Alger, Algérie",""],
+["CLI-0106","Ipsen pharma Algérie SPA","Alger","","Lot n°10-11 Bd du 11 Décembre 1960 Alger, Alger",""],
+["CLI-0107","Ipvset","Alger","Kouba","Ain El-Sultan, îlot N°254, Section 30 Lot N°15, Les Vergers, Kouba 16029",""],
+["CLI-0108","Lafarge ciment de M'sila SPA","Alger","Mohammadia","Lafarge Ciment de M'sila SPA (LCM) Siège social : Bureau N01 16ème étage, tour Geneva, les",""],
+["CLI-0109","L'Agence Nationale de Contrôle et de Régulation des Activité","Alger","El Biar","05 & 65, boulevard 11 décembre 1960, El Biar – Alger, El biar, Alger, Algérie",""],
+["CLI-0110","LE MERIDIEN","Oran","Oran","Les genets, Chemin de la Wilaya, Route 75",""],
+["CLI-0111","Legrand Electric Algérie","Alger","Hydra","Lotissement Boursas Porte n°15 16035.Hydra.Alger ALGERIE, Alger, Algérie",""],
+["CLI-0112","L'IDRISS","Alger","Dely Ibrahim","Coopérative Immobilière El Bouroudj, Aïn Allah, Dely Ibrahim, ALGER",""],
+["CLI-0113","LU Algérie SPA","Alger","Reghaia","Route Nationale N°5 Zone Industrielle -Reghaia -Alger, Reghaia, Alger, Algérie",""],
+["CLI-0114","Lycée International Alexandre Dumas","Alger","Ben Aknoun","Chemin Arezki Mouri, Ben Aknoun, Algérie",""],
+["CLI-0115","Maersk Algérie SPA","Alger","Mohammadia","“ Tour GENEVA “ 14 ème étage Pins Maritimes EL -Mohammadia – Alger, Alger, Algérie",""],
+["CLI-0116","MAHGOUN, MIHOUBI ARCHITECTES","Alger","Dely Ibrahim","résidence 21ème siècle Bt 04 n 01 Ain Allah Dely Brahim, Alger, Algérie",""],
+["CLI-0117","Marriott Hotel Constantine","Constantine","Constantine","Marriot hotel constantine/Cite des arcades Romaines/25000/Constantine Alger, Algérie",""],
+["CLI-0118","Master Builders Solutions","Alger","Dely Ibrahim","Coopérative Immobilière El Bouroudj, Aïn Allah, Dely Ibrahim, ALGER",""],
+["CLI-0119","Média Stratégie","Alger","Hydra","51 Chemin de la Madeleine, Hydra Alger",""],
+["CLI-0120","MEDICARE INTERNATIONAL","Alger","Hydra","40 Rue Larbi Alik, Hydra 16000, Alger, Algérie",""],
+["CLI-0121","Medico Medline SARL","Alger","Kouba","N°1 Coopérative Maison Rouge, Kouba, Alger, Algérie",""],
+["CLI-0122","Meliani Nouria","Alger","El Biar","25 Rue Rabah Bourbia, el Biar, Alger",""],
+["CLI-0123","Mercedes Benz ams","Alger","Rouiba","Route Nationale N°5, Rouiba, Algiers, Algeria, Alger, Algérie",""],
+["CLI-0124","METAL STRUCTURE SPA","Bou Saada","Mohamed Boudiaf","Cité sellier , Coopérative Mohamed Boudiaf ,Sidi Yahia – Alger, Algérie",""],
+["CLI-0125","Militzer & Münch Algérie SPA","Alger","Hydra","16 Rue Hamdani Lahsen Hydra Alger, Alger, Algérie",""],
+["CLI-0126","MTNI Algérie","Alger","Hydra","49, La Madeleine N° : 62, Hydra – Alger., Alger, Algérie",""],
+["CLI-0127","Neoverse","Alger","Dely Ibrahim","Propriete Zaoui Mohamed BATB3 N166 Dely Brahim Alger DELY BRAHIM ALGER, Alger, Algérie",""],
+["CLI-0128","Nokia Algérie SARL","Alger","Mohammadia","Mr Accounts Payable PINS MARITIME MOHAMMADIA",""],
+["CLI-0129","NUMILOG SPA","Alger","Kouba","lot DN°6 Zhun Garidi Kouba 16005 Alger, Algérie",""],
+["CLI-0130","OCCIDENTAL OF ALGERIA LLC","Alger","Hydra","05 RUE OSMANE HADJI HYDRA 16035 ALGER, Alger, Algérie",""],
+["CLI-0131","Optimum Telecom Algérie S.p.a","Alger","Dar El Beida","Route de Wilaya, Lot n° 37/4,, Alger, Algérie",""],
+["CLI-0132","OPTIMUM TELECOM ALGERIE SPA","Alger","Dar El Beida","Route de Wilaya Lot N°37/4 Dar El Beida, Alger",""],
+["CLI-0133","Petrofac Int UAE LLC","Alger","Mohammadia","Tour ACB 2eme Etage pins maritimes el Mohammadia Alger, Alger, Algérie",""],
+["CLI-0134","Piové","Alger","Zeralda","N° 29/A Zone industrielle Zeralda, Alger - ALGERIE, Algérie",""],
+["CLI-0135","Power International holding algeria","Alger","Mohammadia","5 eme etage Tour ABC Mohammadia Alger, Alger, Alger, Algérie",""],
+["CLI-0136","PRICE WATER HOUSE COOPERS ALGERIE ( PWC)","Alger","Hydra","01,rue ammar mahasri,-16035 Hydra Alger, Alger, Algérie",""],
+["CLI-0137","Qatar Airways","Alger","Cheraga","Cheraga towers, 7eme etage route wilaya 142 Cheraga, Alger, Algérie",""],
+["CLI-0138","RAFIK AZZEDINE MEDJAHED","Alger","Ben Aknoun","SECT 14 GRP 12 2 EME ETG LOT29 CENTRE COMMERCIAL BEN AKNOUN",""],
+["CLI-0139","RCK Travaux Electromécaniques SARL","Alger","Dely Ibrahim","16 RUE AHMED OUAKEL 1ER NIVEAU BUREAU 1.2.3. DELY BRAHIM ALGER, Alger, Algérie",""],
+["CLI-0140","Regus Algiers Les Pins Maritimes","Alger","Mohammadia","Regus Algiers Les Pins Maritimes Tour ABC 11eme étage, Alger, Algérie",""],
+["CLI-0141","Regus Oran","Oran","Bir El Djir","Residence Les Aures, Immeuble CN 01 USTO, TLS Building, Bir El Djir 31130, Oran, Algérie",""],
+["CLI-0142","RENAULT ALGERIE SPA","Alger","Dar El Beida","13 Rue de Dar El Beida-Z.I Oued Smar Alger.Algerie, Alger, Algérie",""],
+["CLI-0143","RENAULT ALGERIE SPA (TASSALA)","Alger","Dar El Beida","13 Rue de Dar El Beida-Z.I Oued Smar Alger.Algerie",""],
+["CLI-0144","Renault Algérie Succursale","Alger","Dar El Beida","13 route Dar el Beida Oued Semar, Alger, Algérie",""],
+["CLI-0145","Renault Algérie Succursale OUED SMAR","Alger","Dar El Beida","3,Route de dar El Beida-Z.I Oued Smar Alger-Algerie Oued smar Alger",""],
+["CLI-0146","RENAULT TRUCKS","Alger","Dely Ibrahim","Propriété Zaoui Mohamed, les Grands Vents, Section 01, lot 779, Dely Ibrahim, Alger, Algér",""],
+["CLI-0147","SabiSystems","Alger","El Biar","32, El Biar 16032, Algeria, Algérie",""],
+["CLI-0148","SAHAMAT EUROFOR GROUP","Alger","Oued Smar","Extension Zone industrielle Oued Smar Lot 92-93-94 Oued Smar Alger",""],
+["CLI-0149","SANOFI-AVENTIS ALGERIE SPA","Alger","Hydra","Siége social Zone d'activité BT B, Lot 29-30-31 1635, Alger, Algérie",""],
+["CLI-0150","SAPPL Mercedes-Benz SPA","Alger","Rouiba","Route Nationale No 5, Rouiba. Algiers, Algeria, Alger, Alger, Algérie",""],
+["CLI-0151","SARL AAPM AstraZeneca","Alger","Hydra","Micro Zone d’activité No.20 - Bloc A, Chemin Doudou Mokhtar، Hydra, Alger, Algérie",""],
+["CLI-0152","SARL AFRIC NEGOCE ET DISTRIBUTION","Alger","Bir Touta","Section 07 Groupement 397 N°04 BIS Route de Partition BABA ALI, Alger, Algérie",""],
+["CLI-0153","SARL ALDIAG","Alger","Bir Mourad Rais","Cité said hamdine cooperative EL Sihem Bt A section 05 Groupe de propriété N°39 Bir Mourad",""],
+["CLI-0154","SARL ALREST","Alger","Reghaia","Zone industrielle Réghaia Alger",""],
+["CLI-0155","SARL ALTELEC","Blida","Beni-Tamou","rue frères zedri beni tamou-Blida",""],
+["CLI-0156","SARL AMOUDA CIMENT","Alger","Cheraga","05 Cité Alioua Fodil.Chéraga Alger",""],
+["CLI-0157","SARL ANSALDO ALGERIE","Alger","Hydra","33 LOT Petite Province Hydra Alger",""],
+["CLI-0158","SARL AQUAFURAT","Ain Defla","Ain-Defla","24 Cite EL Berkouk Local N°01 Miliana Ain Defla, Algérie",""],
+["CLI-0159","SARL ASTALAVISTA","Alger","Mohammadia","CENTRE COMMERCIAL ET D'AFFAIRE-MOHAMADIA-MALL 8eme ETAGE 16058 ALGER",""],
+["CLI-0160","Sarl Azzar Pub","Alger","Mohammadia","11 Rue d'Angouleme,Pins Maritime 28830 El Mohammadia N°",""],
+["CLI-0161","SARL B.VENDING DISTRUBTION AUTOMATIQUE","Alger","Ben Aknoun","Cité 360 logement bt D21 L:409 les fréres aissou BEN AKNON, 1600 ALG, Alger, Algérie",""],
+["CLI-0162","SARL Best Cable","Blida","Blida","Haï Ben Salah N°95, Oued Alleug, Blida, Algérie",""],
+["CLI-0163","Sarl Cherfaoui lait","Alger","El Mouradia","37 Rue Ismail Chaalel, El Mouradia Alger",""],
+["CLI-0164","Sarl Clinica Group","Alger","Cheraga","Cité les Dunes, domaine propriétair N°389, lotissement N°4",""],
+["CLI-0165","Sarl Conserverie Général Alimentaire Tessala ''COGEAT''","Alger","Tessala El Merdja","Sidi Abed Lot 06 Sections N°66, Alger, Algérie",""],
+["CLI-0166","SARL Cosmoskin","Alger","Hydra","15 Hamdani Lahcen, Hydra 16000",""],
+["CLI-0167","SARL CR ASSAINISSEMENT (SIEMENS)","Alger","Zeralda","Cité El Mir N°01 Zeralda.Alger, Alger, Algérie",""],
+["CLI-0168","SARL DAR AL DAWA ALGERIE","Alger","Cheraga","RTE BOUCHAOUI GP 484 SECT 01 ALGER",""],
+["CLI-0169","SARL DECATHLON EL DJAZAIR","Alger","Bab Ezzouar","Centre commercial bab ezzouar alger.Algerie, Alger, Algérie",""],
+["CLI-0170","SARL DECATHLON EL DJAZAIR GARDEN CITY","Alger","Bab Ezzouar","Centre commercial bab ezzouar alger.Algerie",""],
+["CLI-0171","SARL DECATHLON EL DJAZAIR MAGASIN","Alger","Bab Ezzouar","Centre commercial bab ezzouar alger.Algerie",""],
+["CLI-0172","SARL DOSERVAL (Amelkis)","Alger","Mohammadia","ABC Pin Maritimes Mohammadia. Regus– 16058 Alger, Alger, Algérie",""],
+["CLI-0173","Sarl El Kantara Tourisme et voyage","Alger","El Harrach","21 Rue Said Grifon Sec 07 GRPN°76 Harrach Alger, Alger, Algérie",""],
+["CLI-0174","SARL ELEKTA","Alger","Hydra","20 micro zone d'activité, business center dar el Madina, Bloc A étage 3 Hydra, 000 Hydra, ",""],
+["CLI-0175","SARL FLEX WORLD","Alger","Hydra","Rue Abdelkader Gadouche_ Projet 58 Logements, Lotissements 33-35-36, Alger, Algérie",""],
+["CLI-0176","SARL FMM INDUSTRY","Alger","Oued Smar","Zone Industrielle Oued Smar lot N°139 Algérie, Alger, Algérie",""],
+["CLI-0177","SARL GLOBAL AXIS","Alger","Dely Ibrahim","Propriété Zaoui Mohamed, les grands vents,section 01 ilot 779, Dely Brahim.Alger, Alger, A",""],
+["CLI-0178","SARL Global Engeneering Trusted Team","Alger","Baba Hassen","267 Extension A Baba Hassan Algerie",""],
+["CLI-0179","Sarl Halil commerce et industrie","Blida","Ouled Yaich","HALIL GROUP Route nationale N°29 Ouled Yaich, Blida, Algérie",""],
+["CLI-0180","SARL HAYAT DHC ALGERIA","Blida","Bouinan","RN 29 Zone d'Activite Bouinan 09450W Blida",""],
+["CLI-0181","Sarl Heetch El Djazair","Alger","Hussein Dey","1 Rue Tripoli, Hussein Dey 16006, Alger, Algérie",""],
+["CLI-0182","SARL HIKMA PHARMA ALGERIA (Staouali)","Alger","Staoueli","Zone d'activité Staouali Tranche 15-16 Alger, Alger, Algérie",""],
+["CLI-0183","SARL Innocare","Alger","Ouled Fayet","Cité 662 Logts Plateau Est Bt 23 N°21 5ème étage, Alger, Algérie",""],
+["CLI-0184","Sarl Inspecta north africa","Alger","El Achour","Résidence des Deux Bassins Bâtiment 3-C1, 2 ème étage. Oued Romane, El Achour, Alger, Alge",""],
+["CLI-0185","SARL JSM SOLUTION","Alger","Draria","COOP ESSALEM SEBALA GP 811 SECT 01",""],
+["CLI-0186","SARL LinkingPartner","Alger","Rouiba","Housh El Bey N°29, Section 05 Commune de Rouiba wilaya d'Alger, Algérie",""],
+["CLI-0187","SARL LYNXAL","Alger","Mohammadia","Rue les Angouleme N°11, LOTSS LES PINS MARITIMES, ALG",""],
+["CLI-0188","Sarl MAD Diffusion Services","Alger","Ain Benian","N° 10 Route de Ain Benian, Lot N°18, El Kerma, Chéraga, Alger",""],
+["CLI-0189","SARL Maison de Joelle Clinica Joelle Algérie","Alger","Hydra","50 BELKACEM AMANI HYDRA ALGER",""],
+["CLI-0190","Sarl Master Medic","Alger","Birkhadem","11 Bis, Compagne Semmar, n°46, Birkhadem, Alger, Alger, Algérie",""],
+["CLI-0191","SARL MATEG","Oran","Es Senia","MC53+8H7, Es Sénia, Alger, Algérie",""],
+["CLI-0192","Sarl MDS Textile","Alger","Draria","10 , lot dauphin, draria , alger , Alger, Algérie, Alger, Algérie",""],
+["CLI-0193","SARL MEDIPHARMA INTERNATIONAL","Alger","Rahmania","Zone Industrielle les verger lot 13et14 section2 groupe146 AL RAHMANIA ALGER",""],
+["CLI-0194","SARL NEWREST ALGERIE","Alger","Reghaia","Zone Industrielle Reghaia Alger Algérie 16000, Alger, Algérie",""],
+["CLI-0195","SARL ONET Propreté","Alger","El Achour","N°59 CITE COMMUNALE EL ACHOUR-ALGER",""],
+["CLI-0196","SARL PROMASIDOR","Blida","Boufarik","Zone d'activité de Guerouaou, route de Boufarik.Blida, Blida, Algérie",""],
+["CLI-0197","Sarl Regus Algérie Bab Ezzouar","Alger","Bab Ezzouar","4eme étage,tour Nord 43-44-45-46 l'ilot N°8, Quartier des affaires Bab Ezzouar, Algérie",""],
+["CLI-0198","SARL SANTE DOM","Alger","Ouled Fayet","83 Route Nationale N 36 , Ouled Fayet., Alger, Algérie",""],
+["CLI-0199","SARL Schneider Electric Algérie","Alger","Ouled Fayet","ROUTE OULED FAYET N°02 BIS",""],
+["CLI-0200","SARL SENSE CONSEIL","Alger","Hydra","20 Rue G Les Crétes., Alger, Algérie",""],
+["CLI-0201","SARL SHIFTIN","Alger","Hydra","03 Ext Parc Paradou, Hydra, Alger 16035",""],
+["CLI-0202","SARL SMART WATER TRAITEMENT","Blida","Larbaa","HAOUCH HAFIZ SECTION 07GR 52 LOCAL 02 LARBAARC 09/04-0981003B10",""],
+["CLI-0203","SARL SOBCO","Boumerdes","Boumerdes","Zone Industrielle Kharouba Lot N° 29 Boumerdes",""],
+["CLI-0204","Sarl SOLTIC Algerie","Alger","Dar El Beida","Cité Krim Belkacem lot 04 Group N°06 1er etage 16033, Algérie",""],
+["CLI-0205","SARL TIMAC AGRO ALGERIE","Alger","Bir Touta","Site N°3, Groupe de propriété N° 292, Section-7,ZI, Alger, Algérie",""],
+["CLI-0206","Sarl Travomed","Alger","Ben Aknoun","Rue Doudoud Mokhtar, Ben Aknoun, Ben aknoun, Alger, Algérie",""],
+["CLI-0207","SARL VECTEUR EXPERTISES","Alger","Bab Ezzouar","SIEGE SOCIAL : Centre des Affaires Bab Ezzouar Lot 43 Groupe 08 Tour Nord-Ouest Tél : 06 7",""],
+["CLI-0208","SARL WANA CONSULTING","Alger","Dely Ibrahim","Cité djenan Brahim Villa 3,les grands vents dely brahim.Alger, Alger, Algérie",""],
+["CLI-0209","SARL WILSON'S SOLUTIONS ALGERIA","Alger","Maalma","Cité 1067 Logts Bt A4 N°9 Mahelma, Zeralda, Alger, Algérie",""],
+["CLI-0210","SATI EURL (MICHELIN)","Alger","Mohammadia","SATI EURL Algeria Business Center, 9th floor Pins Maritimes, 1600 Mohammadia, Alger, Algér",""],
+["CLI-0211","Seita Imperial Tobacco","Alger","Hydra","Micro zone d'activité dar el Madina Businnes Center, Algérie",""],
+["CLI-0212","Sheraton Club des pins","Alger","Staoueli","Sheraton Club des pins",""],
+["CLI-0213","SIDAL SPA","Alger","Reghaia","Bloc Administratif HASSAIN ALI 1er Etage Reghaia – Alger",""],
+["CLI-0214","Sika El Djazaïr SpA","Alger","Les Eucalyptus","08 Route de L'Arbaa · 16111 Les Eucalyptus · Algeria",""],
+["CLI-0215","Société des Boissons de l’Ouest Algérien (SBOA)","Oran","Oued Tlelat","Exploitation Si Brahim,Lot N°31, Oued Tlélat – Wilaya d’Oran , Algeria., Alger, Algérie",""],
+["CLI-0216","Société Nationale de Sidérurgie HOLDING SNS","Alger","Hydra","07 Rue Belkacem AMANI SITE SIDER le Paradou Hydra Alger",""],
+["CLI-0217","Solar Turbines Switzerland SAGL","Alger","Oued Smar","Zone Industrielle, Extension N°218, 1er étage Oued Smar, Algeria, Alger, Algérie",""],
+["CLI-0218","SOPROVI ALGÉRIE SPA","Blida","Meftah","Cité El Khadra groupe Propiétaire N°144 Lot 03 Meftah.Blida, Algérie",""],
+["CLI-0219","SPA Arab  Banking Corporation  Algeria BLIDA","Blida","Blida","16 Boulevard Mohamed Boudiaf.Blida",""],
+["CLI-0220","SPA Arab Leasing Corporation","Alger","Dely Ibrahim","COOP BOIS DES CARS LOT 62 RUE AHMED OUAKES",""],
+["CLI-0221","SPA BTPH Hasnaoui","Sidi Bel Abbes","Sidi Bel-Abbes","B.P 11M Zone Industrielle Sidi-Bel-Abbés 22000, Algérie, Alger, Algérie",""],
+["CLI-0222","SPA GENERALE CONDIMENTAIRE ALGERIE (Lesieur)","Alger","Tessala El Merdja","Route Sidi abbad, Section 06 Group de propriété 61., Alger, Algérie",""],
+["CLI-0223","SPA Groupe Télécom Algérie","Alger","Bab Ezzouar","RN 36 GP 58 SECT 13",""],
+["CLI-0224","SPA HB CAPITAL","Alger","","201 RUE HASSIBA BEN BOUALI",""],
+["CLI-0225","SPA Hotellerie Tourisme &Thermalisme","Alger","Hydra","07 Rue AMANI Belkacem Site-Sider, Alger, Algérie",""],
+["CLI-0226","SPA SIKA El Djazair","Alger","Les Eucalyptus","08 Route de L'Arbaa Les Eucalyptus, Les Eucalyptus Les Eucalyptus, Alger, Algérie",""],
+["CLI-0227","SPA SOCIETE D'INFRASTRUCTURES AQUA HOTELERIES D'ALGERIE","Skikda","Skikda","005 Rue brahim maiza bloc B SKIKDA, SKIKDA, Algérie",""],
+["CLI-0228","SPA STAEM","Tipaza","Tipaza","Z.I MAZAFRAN RTE DE BOUFARIK KOLEA,Tipaza(42),Algerie",""],
+["CLI-0229","SPA SWEDISH MACHINERY & TRUCKS ALGERIE","Alger","Rouiba","Zone Industrielle de Rouïba - Lot N°267 - Voie B - Section 7 – Rouïba 16012",""],
+["CLI-0230","SPA TAFADIS GROUPE MADAR HOLDING","Boumerdes","Larbatache","Larbatache",""],
+["CLI-0231","SPA VITAL CARE PRODUCTION DISTRIBUTION ET LOGISTIQUE","Alger","Birkhadem","Semmar (Djenan Boudjakdi) lieu-dit Citizen ilot 272 section 01 Birkhadem Alger (DZ)",""],
+["CLI-0232","TAYAL S.P.A","Relizane","Sidi Khettab","Zone Industrielle Section 22, Ilot propriété 20, Sidi Khettab, RELIZANE",""],
+["CLI-0233","TEXWORD group","Alger","Ouled Fayet","Zone industrielle Amara n° 4 route Ouled Fayet Alger, Algeria, Algérie",""],
+["CLI-0234","Thales SIX GTS France SAS – Etablissement Stable en Algérie","Alger","El Biar","Projet Rocade Nord 04, rue Abdeslam TAKARLI El Biar Alger",""],
+["CLI-0235","TOYOTA  ALGERIE","Alger","Hydra","lot Muchacho N°02 Haut site d’Hydra Hydra, Alger, Algérie",""],
+["CLI-0236","Trust Bank Algeria Agence Hydra","Alger","Hydra","70 Chemin Larbi allik6 Allik P.O BOX 359, Alger, Algérie",""],
+["CLI-0237","Trust Bank Algeria Agence Ouled Fayet 00210","Alger","Ouled Fayet","Route Nationale N° 142 Ouled Fayet.Alger",""],
+["CLI-0238","U Builders Corporation group","Alger","Ain Benian","42, B1 Djenane El Mabrouk, Aïn Benian, Algérie (Extension B2, Villa N°02)، Alger 16018",""],
+["CLI-0239","Unilever Algérie S.P.A","Alger","Hydra","Rue de la Madeleine Hydra – Algiers, Algeria, Alger, Algérie",""],
+["CLI-0240","UNITED TOBACCO COMPANY UTC SPA","Tipaza","Tipaza","Zone Rurale de MAZAFRAN,Coop N°43,parcelle N°5,BP229 commune de Kolea",""],
+["CLI-0241","URBACON TRADING AND CONTRACTING 3 LLC -Algeria","Alger","Mohammadia","GENEVA TOWER 10TH FLOOR PINS MARITIME",""],
+["CLI-0242","VFS GLOBAL SERVICES ALGERIA","Alger","Dar El Beida","02 Route de Dar El Beida, Zone Industrielle de Oued Smar,, Oued Smar, Alger, Algérie",""],
+["CLI-0243","Wataniya Télécom Algérie S.P.A (Centre)","Alger","Ouled Fayet","66 Route de Ouled Fayet,Chéraga.Alger, Alger, Algérie",""],
+["CLI-0244","Wataniya Télécom Algérie S.P.A (Oran)","Oran","Oran","Lot N°03, Cité Othmania, Oran, Alger, Algérie",""],
+["CLI-0245","WAVES CALL","Alger","Bir Mourad Rais","LOT 49/50 Zone D'activité Said Hamdin Bmr-Alger, Alger, Algérie",""],
+["CLI-0246","Winthrop Pharma Saidal SPA","Alger","Hydra","Siége social Zone d'activité BT B, Lot 29-30-31 1635, Alger, Algérie",""],
+["CLI-0247","Yokogawa","Alger","Hydra","chemin de la madeleine villa 13 Hydra - Alger, Alger, Algérie",""],
+["CLI-0248","Ziraat Benkasi Algérie","Alger","Hydra","07B Larbi Alli Lot N°36 section 16 Hydra",""]
+];
+for(var i=0;i<D.length;i++) CL.push({id:D[i][0],n:D[i][1],w:D[i][2],c:D[i][3],a:D[i][4],p:D[i][5]});
+})();
+
+// ═══ STATE ═══════════════════════════════════════
+var CMDS=[],N=1000,MODE="login",LIV_ID=null,TAB="db",CLS_Q="";
+var STATUTS=["A programmer","Programmee","En cours","Retardee","Annulee","Livree"];
+var PRIORITES=["Normale","Importante","Critique"];
+var DC=["#3D3DB5","#E5007D","#72B81E","#8B6914","#C0392B","#1A7A6E","#7B1FA2","#0277BD"];
+var SS=null,sstatus="none";
+
+// ═══ FIREBASE ════════════════════════════════════
+function fbSave(cb){
+  if(!FB_URL){sv();if(cb)cb();return;}
+  sstatus="bsy";rsd();
+  fetch(FB_URL+"/odelys.json",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({cmds:CMDS,n:N,cl:CL,lv:LV,ts:Date.now()})})
+    .then(function(){sstatus="ok";sv();rsd();if(cb)cb();})
+    .catch(function(){sstatus="err";sv();rsd();if(cb)cb();});
+}
+// Normalize date "9/4/2026" -> "09/04/2026"
+function normDate(s){
+  if(!s||typeof s!=="string")return s||"";
+  var p=s.split("/");
+  if(p.length!==3)return s;
+  return p[0].padStart(2,"0")+"/"+p[1].padStart(2,"0")+"/"+p[2];
+}
+function normStatut(s){
+  if(!s)return "A programmer";
+  var map={
+    "Livré":"Livree","Livre":"Livree","livree":"Livree","livré":"Livree","LIVREE":"Livree","LIVRÉ":"Livree",
+    "Annulé":"Annulee","Annule":"Annulee","annulee":"Annulee","ANNULEE":"Annulee","Annulée":"Annulee",
+    "En attente":"A programmer","en attente":"A programmer",
+    "Programmée":"Programmee","Programmé":"Programmee","programmee":"Programmee",
+    "En cours":"En cours","en cours":"En cours",
+    "Retardée":"Retardee","retardee":"Retardee"
+  };
+  return map[s]||s;
+}
+function normCmds(cmds){
+  if(!cmds)return cmds;
+  return cmds.map(function(c){
+    c.dc=normDate(c.dc);
+    c.dls=normDate(c.dls);
+    c.dl=normDate(c.dl);
+    c.s=normStatut(c.s);
+    // Auto-critique si date de livraison dépassée et non livrée
+    if(c.dls&&c.s!=="Livree"&&c.s!=="Annulee"){
+      var dlsD=parseDate(c.dls);
+      var todayD=parseDate(td());
+      if(dlsD&&dlsD<todayD) c.pri="Critique";
+    }
+    return c;
+  });
+}
+function fbLoad(cb){
+  if(!FB_URL){ld();if(cb)cb();return;}
+  sstatus="bsy";rsd();
+  fetch(FB_URL+"/odelys.json")
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var fbHasData=d&&d.cmds&&d.cmds.length>0;
+      var localHasData=CMDS&&CMDS.length>0;
+      if(fbHasData&&(!localHasData||d.cmds.length>=CMDS.length)){
+        CMDS=normCmds(d.cmds);N=d.n||N;
+        if(d.cl&&d.cl.length>10)CL=d.cl;
+        if(d.lv&&d.lv.length>0)LV=d.lv;
+        sstatus="ok";sv();rsd();if(cb)cb();
+      } else if(localHasData){
+        sstatus="ok";rsd();
+        fbSave(cb);
+      } else {
+        sstatus="ok";rsd();if(cb)cb();
+      }
+    })
+    .catch(function(){sstatus="err";rsd();if(cb)cb();});
+}
+function rsd(){var d=document.getElementById("sdot");if(d){d.className="sdot s"+sstatus;}}
+function startSync(){if(SS)clearInterval(SS);if(!FB_URL)return;SS=setInterval(function(){fbLoad(function(){if(MODE!=="login")render();});},SYNC_IV);}
+
+// ═══ STORAGE ═════════════════════════════════════
+function sv(){try{localStorage.setItem("ody5",JSON.stringify({c:CMDS,n:N,cl:CL,lv:LV,fb:FB_URL,gas:GAS_URL}));}catch(e){}}
+function ld(){
+  // Try current key first, then fallback to older versions
+  var keys=["ody5","ody4","ody3","ody2"];
+  for(var k=0;k<keys.length;k++){
+    try{
+      var d=JSON.parse(localStorage.getItem(keys[k])||"null");
+      if(!d)continue;
+      if(d.c&&d.c.length>0)CMDS=d.c;
+      if(d.n&&d.n>1000)N=d.n;
+      if(d.cl&&d.cl.length>10)CL=d.cl;
+      if(d.lv&&d.lv.length>0)LV=d.lv;
+      if(d.fb&&!FB_URL)FB_URL=d.fb;if(d.gas)GAS_URL=d.gas;
+      if(d.c&&d.c.length>0){
+        CMDS=normCmds(CMDS);
+        sv();
+        break;
+      }
+    }catch(e){}
+  }
+}
+
+// ═══ UTILS ═══════════════════════════════════════
+function td(){
+  var d=new Date();
+  var day=String(d.getDate()).padStart(2,"0");
+  var mon=String(d.getMonth()+1).padStart(2,"0");
+  return day+"/"+mon+"/"+d.getFullYear();
+}
+function tdiso(){return new Date().toISOString().split("T")[0];}
+function nid(){return "CMD-"+(++N).toString().padStart(4,"0");}
+function ini(n){return n.split(" ").slice(0,2).map(function(w){return w[0]||"";}).join("").toUpperCase();}
+function lcolor(id){var i=LV.findIndex(function(l){return l.id===id;});return DC[i<0?0:i%DC.length];}
+function lname(id){var l=LV.find(function(l){return l.id===id;});return l?l.n:"?";}
+function capUsed(lid){
+  var l=LV.find(function(x){return x.id===lid;});
+  if(!l)return 0;
+  var cs=CMDS.filter(function(c){
+    return c.lid===lid&&c.s!=="Annulee"&&c.s!=="Livree";
+  });
+  if(!cs.length)return 0;
+  // Find load of current (first incomplete) circuit
+  var load=0,circuitLoad=0;
+  for(var i=0;i<cs.length;i++){
+    load+=(+cs[i].q||0);
+    // If this circuit is full, start a new one
+    if(load>l.cap){
+      // New circuit started - reset to current command load
+      load=(+cs[i].q||0);
+    }
+    circuitLoad=load;
+  }
+  return circuitLoad; // load of current circuit
+}
+function parseDate(s){
+  if(!s)return null;
+  var p=s.split("/");
+  if(p.length!==3)return null;
+  return new Date(p[2]+"-"+p[1].padStart(2,"0")+"-"+p[0].padStart(2,"0")+"T12:00:00");
+}
+function livCmds(lid){
+  // Dashboard: all assigned (green=livré, orange=attente, red=annulé)
+  return CMDS.filter(function(c){
+    if(c.lid!==lid)return false;
+    if(c.s==="Livree"||c.s==="Annulee")return true;
+    var today=parseDate(td());
+    if(c.dls){var dls=parseDate(c.dls);if(dls&&dls>today)return false;}
+    return true;
+  }).sort(function(a,b){
+    if(a.ord!==undefined&&b.ord!==undefined)return a.ord-b.ord;
+    var da=parseDate(a.dls||a.dc),db=parseDate(b.dls||b.dc);
+    if(da&&db)return da-db;
+    return 0;
+  });
+}
+function livCmdsActive(lid){
+  var t=td();
+  return CMDS.filter(function(c){
+    if(c.lid!==lid||c.s==="Annulee"||c.s==="Livree")return false;
+    if(c.dls){var d=parseDate(c.dls);if(d&&d>parseDate(t))return false;}
+    return true;
+  }).sort(function(a,b){
+    if(a.ord!==undefined&&b.ord!==undefined)return a.ord-b.ord;
+    var da=parseDate(a.dls||a.dc),db=parseDate(b.dls||b.dc);
+    if(da&&db)return da-db;
+    return 0;
+  });
+}
+
+// ═══ EVENT DELEGATION ════════════════════════════
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-a]");if(!t)return;
+  var a=t.dataset.a,id=t.dataset.id;
+  if(a==="tab"){TAB=t.dataset.tab;render();}
+  else if(a==="new-cmd")openNewCmd();
+  else if(a==="edit-cmd")editCmd(id);
+  else if(a==="unaff"){unaff(id);fbSave(render);}
+  else if(a==="mup"){moveCmd(id,t.dataset.lid,-1);fbSave(render);}
+  else if(a==="mdn"){moveCmd(id,t.dataset.lid,1);fbSave(render);}
+  else if(a==="cir"){var ci=parseInt(t.dataset.ci);var cirs=getCircuits(id);if(cirs[ci])openMaps(cirs[ci]);}
+  else if(a==="copy")copyLink(t.dataset.url);
+  else if(a==="ocl")openClientForm(id||null);
+  else if(a==="dcl")delClient(id);
+  else if(a==="del-cmd")delCmd(id);
+  else if(a==="olv")openLivForm(id||null);
+  else if(a==="dlv")delLiv(id);
+  else if(a==="sed")saveEdit(t.dataset.eid);
+  else if(a==="nav")navTo(t.dataset.addr);
+  else if(a==="enc"){setS(id,"En cours");fbSave(render);}
+  else if(a==="clf")confirmLiv(id);
+  else if(a==="omy")optMyRoute();
+  else if(a==="adl")doAdminLogin();
+  else if(a==="lvl")doLivLogin();
+  else if(a==="sav")saveCmd();
+  else if(a==="scl")saveCL(t.dataset.eid||null);
+  else if(a==="slv")saveLiv(t.dataset.eid||null);
+  else if(a==="cov")closeOv();
+  else if(a==="fbc")openFbConfig();
+  else if(a==="sfb")saveFbConfig();
+  else if(a==="syn"){renderLoading();fbLoad(function(){render();});}
+  else if(a==="afc"){
+    var liv=t.dataset.liv;
+    if(!liv){alert("Choisissez un livreur");return;}
+    CMDS.filter(function(c){
+    var dlsD=c.dls?parseDate(c.dls):null;
+    var isFut=dlsD&&dlsD>parseDate(td());
+    return c.c===t.dataset.grp&&c.s!="Annulee"&&c.s!="Livree"&&!isFut;
+  }).forEach(function(c){c.lid=liv;if(c.s==="A programmer")c.s="Programmee";});
+    fbSave(render);
+  }
+});
+document.addEventListener("change",function(e){
+  var t=e.target.closest("[data-a]");if(!t)return;
+  var a=t.dataset.a,id=t.dataset.id;
+  if(a==="aff"){aff(id,t.value);fbSave(render);}
+  else if(a==="sf"){setF(id,t.dataset.f,t.value);}
+});
+
+// ═══ MODE DETECTION ══════════════════════════════
+function detectMode(){
+  var p=new URLSearchParams(window.location.search);
+  var liv=p.get("liv"),adm=p.get("admin");
+  if(liv){var l=LV.find(function(x){return x.id===liv;});if(l){MODE="livreur";LIV_ID=liv;return;}}
+  if(adm===ADMIN_PWD){MODE="admin";return;}
+  MODE="login";
+}
+
+// ═══ RENDER ══════════════════════════════════════
+function render(){
+  // Safety: normalize all statuses before render
+  CMDS.forEach(function(c){c.s=normStatut(c.s);});
+  var root=document.getElementById("root");
+  if(MODE==="login"){root.innerHTML=rnLogin();return;}
+  if(MODE==="livreur"){root.innerHTML=rnLiv();return;}
+  var tc=CMDS.filter(function(c){return c.dc===td();});
+  var sBtn=FB_URL?'<span class="sdot s'+sstatus+'" id="sdot" data-a="syn" title="Actualiser"></span>':'<button class="btn bxs" data-a="fbc" style="font-size:10px;padding:3px 7px">⚙ Firebase</button>';
+  var top='<div class="top"><div class="logi"><img src="data:image/png;base64,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" alt="O"></div>'
+    +'<div class="brand"><b>ODEL</b><span style="color:#E5007D">YS</span><small>ADMIN</small></div>'
+    +'<div class="top-r">'+sBtn+'<span class="bge bga">Admin</span><span class="chip">'+tc.length+'</span></div></div>';
+  var tabs='<div class="tabs">';
+  [["db","Dashboard"],["cmd","Commandes"],["aff","Affectation"],["plan","Planning 📋"],["lv","Livreurs"],["cl","Clients"],["bil","Bilan"],["map","Carte 🗺"]].forEach(function(t){
+    tabs+='<button class="tab'+(TAB===t[0]?" on":"")+'" data-a="tab" data-tab="'+t[0]+'">'+t[1]+'</button>';
+  });
+  tabs+="</div>";
+  var pg="";
+  try{
+    if(TAB==="db")pg=pgDB();
+    else if(TAB==="cmd")pg=pgCMD();
+    else if(TAB==="aff")pg=pgAFF();
+    else if(TAB==="lv")pg=pgLV();
+    else if(TAB==="cl")pg=pgCL();
+    else if(TAB==="bil")pg=pgBIL();
+    else if(TAB==="map")pg=pgMAP();
+    else if(TAB==="plan")pg=pgPLAN();
+  }catch(e){pg='<div class="al al-r">Erreur: '+e.message+'</div>';}
+  root.innerHTML='<div class="app">'+top+tabs+'<div class="pg" id="pg">'+pg+'</div></div>';
+}
+
+// ═══ LOGIN ════════════════════════════════════════
+function rnLogin(){
+  var lo='<option value="">-- Choisir mon nom --</option>';
+  LV.forEach(function(l){lo+='<option value="'+l.id+'">'+l.n+' ('+l.v+')</option>';});
+  return '<div class="login"><div class="login-card">'
+    +'<div class="login-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAonUlEQVR42u28d5hV1dn//Vlr7XLq9EJXEGwoCoq919hiA1s0iRrjoybmScTExBjAx0IENEZjSURj1KgQe+wRBCkWLHQQkTLADNNnzpy6917r/eOcM4yoFDHP+3vfX/Z1revMNWefvff67rt877IW/Of4z/Gf4z/H/72H+D/xoYwx4iuezQghzH8A/CJQElCA1WMoQBZG8fkMoAsjAPweIxBC6P9rADTGKMAB3B7DLowiiBKQnucJANu2ewLoF0D0gByQ7TFyQojg/3cAFlTSAUJABAgXhgs4nocTBL4TBFhBEFiWhVRKCaUsAILAJwgwxgQ6CAgcR3nGGC8ctrM9QMwAaSBV+Mz9b6i8+F8AzgWiQKwAXgQIZzJ+WOsgpJRyXNfqqbJqC3Wmh+QVhwaM7/s6lQo8x1HpUMhKF4ArgtgFJIHMvxNI8W8Ezy2AFi98RoFoZ2c2FgpZIcdRqgBQZNOmRNW8eXV9Fi3e1GfN2vbaltZUeTKZjXqeto0xwrKUHwnbqfKKcHv/vqWNQ/eu2Xjwwf027LZbZROQAIIgCIJs1s84jkpalpUsgNdV+D4hhMj+fwLAgo2LAaUF8OJALJXy45GIFSpIVuz9D9bv+twLy/b9cP6GvTfWd/TL5aSyLEE4LIlG7WwkYudsRwUAXi5QqZTnJJOem0prfM9g25ramvjG/Yf3Wnbm6XstOOaYgZ8DnUCQSmUzjuMmLItEAcROoAPo+rZtpPg3SF1ZAbwSoCSVypZGIm4YsNNpr9eDf/5gxD9f/fTQunWd/W1bssuAko7hw3s3jDywX8uee1Wl+vcty0Ui9leqXFdXTm7Y0GEvW94Unf/hhoqPP67vtWZtZ2kup+nfL7bxtFN3n3v1VQfPD4ftTYCXSGTT8bjbUQCwE2gHOoQQmf+jACzYuihQXgQwm/XLLMuKK4Xd0ZHue8ek2Ue99vrKIzs7g+ig3eKdZ5y25+dnnrFnY//+ZV7BA4eKTgWwtEYaoyWAEFJL2W0HezoNf82aNvulfy6v/ucrKwat+jxRUlqikmectufbv77hyHdc124IgsAzxnRaltWey+U6HcdpB9oK0mj+XwewwOXiQEURwEQiWxGPuyGgbNLk2cc8NXXRd9ra/OiBB9ZsuvrKkSuOPnpQogBYPAh01BhcMK6UypJyMxfUGlnwIQakBh0Yg2+M8YCclCIjpUwV7Fxmxtur4w88+N4e8z9qqqmqtDsu++GIV6788UFzgEQq5aciEautIIVtQCvQubMcUnwL4JUClQXwyru6cpWxmOMsXFi/x403vXX+oiVtg/bYPd7xqzFHLDruuMGdQFxrXRYEJqqUCgFhKbu54JYE+ku3LIwgCLSnlEy/+tqn6l9vrZSTJ562pqCmienTP49PuGPmsJWfJUpGjKheMeHWE/8xZEjVZ11duVws5rQUAGwDWoD2nQFRfAvgVQEVvu9Xep6uCIcdd8qU94+5+94Pzs9mtX3Zpfst/tX1R9UBUd/XlWBilqWiBTrj9qAqO3h/8H3N6PP/zocf1zP17+e3H3rogI5Mxk+GQlYL0DVp8ux+Dz388b6hkMz99CcHT7380gNnBkGQMca0WZbVUpDC5p0BUeyEzSuCVwlUptO5qnDYCY2/+a0zH3ti6am9akPJSRNP/vCQgwdkgWrfD0otSxUpjbszLy8INEpJHnjwPX4/8R0iEZuBA8t54dmLM0rJLs8LumxbdQCNn3yywfn5da+PWFeXjI86Z/e3fj/h5GeArmzWb3Ndq7kghUUQzf8WgHGgGqjyfao8L6gKh1X41ze+PvrJpz89/oARlZseeejcBSUlbtjzghqlRImUsqQgdTtlNrQ2SCn4/PNWzj73CQxg25KWlhRXXnEQv77haOP7Om1ZsiOX8xOOYzVms17y8ite2OedOfV9Tzyu7/yH/nLOo0CH79NqWTQXAGwSQnTu6PPIbwBeuGjvgHLPy1WGwyr0u/FvnvPkU58ef/wxfeuemXrRRyUlbqnnBX1tW1VJKasKXvpbcFr5z1tue5tkKodlSXxfU14e5uG/zmfu3LXCsmQkCHS141hVnhf0dV274vG/jVp45hmDPn/zrQ0H/vCyZy4D4pZFue/7RedXYYyJ/FsBNMZYBZpSBpR1deUqw2HHvfe+eSc+/vjyk44/tm/dlIfOWQzUeF5Qa9uq6Fzsb4Mu5VVX8OxzS5g+YxUlJSGCYLPpsizFuJun09WVQ0ppaa3LbVtVBoGuAXr98Q+nLT/7rEGrZszcOPwnP33xe0BYa1Heg7uWGWPsfwuABbsXL9yoNJX1y2MxJzR9+qr977n3g1EjhldvmvLQOQuLqm3bqtIYU/pNpPxr7o+UgpaWFJPunE0s5qC1+YJqRyI2K1Y2c8+98xAizyCBEqVkZRDoSqD3H+48bcVxR/de//Jraw+bNGnWKY6jnK6uXEVxXkC8MNdvXQJDxQjD9/2yiGvF0mmv942/e+viqqpw6h9TL/hoXX2izwuvrxzw8vRVNYs/bY4LITDm24njtTYIIZh812zq6xO4jvWla/u+prwszKOPfczCRQ1IKYogxwogVgA1Ux46Z/GQ3WLtDz+68My5c9fuG4s5oVTKLy9ET6WFTNG3B2APshwHSjxPlwLha6598dzm5mzpn+//7vv1zcmKN2eu3mWv3asiQwZWhNes7+D9BfUIIdA7CaLWBqUkc+asZdo/FlFWFsIPvpp1SJlX9YmT3tkS4KhSstzzgkopZXzyxFM/ARj/P9MvAMpdV8SL4WdBCtW3KYHhIoCpVLY0HHbsF15cOmLmzA3Dv3/J0OVDh9Zmp7+zZsAZJw4WC5Zuiny0eBN7D66ksSVFzgsQQuyU0xACMhmfCXfMQiq5DTtpiMdd5sxdy7/+tQopRU87GbdtVep5QfW++9b6l/1w2LIVnyb63Hb7jOOVUnYqlS3tkUEKfysAFqQvVhyua0WBsrvvmXdGv77R1E03HrcGqHVDVigSsuKtHVm5YVOCkriLrfIeUuyU9GmEELz11ioWLWkgGvmi7fs6e6mU5NHHPuq2nT1oW4lSqgSoHnPdUet32y2eePb5Zce3tSX7RiJu2Pf9IleNbY8Ubo8EFhOi0VTKjyulrClTPhy5Zk2y9ifXHLSkwO1KayqjoQ8WbrJOP24Ql5w9lPkLGzBAJGx/pQobYwi02SYYxeOd2WuQ2ynJWhvCYYtly5poaOjKm5HN97GkpMT3dSkQuerKg5a3tPiRP9w97wjAzmR0vDjfwty/OYAFb1TMIkdcV0SAkief/uTYgYNiydGj9m3VmgqtdfywA/q4qYzHgmVNLFjaSDLlcfgBffMquIUMBkHeISgpkFKwNRNZVP9NjV0oJbfbKUkpSWc8mpqSX2mSLEvGgYpR5w5t3223aPL1f608LAiojsWckO9TDDUj2/LI25JAq5iCz2b9qFLKev31lXuuWZvsdf6ofVYB4SAI4lLKqKWkPO3YQRy0X2/22aOac0/ZnXjMQYgCmSjYsyAwKCVoaEhw3fWvMunO2QjBF/jcVz6IJb+BRxcoJb4uAot6fhAHQueevc/nmzZ58Sf+/vE+gMrlstEegmPvDIDFQlBYaxEGnH88t/iAaFSZ0aP2bQJKlVKRwjkYY6iqCNO7Jooxm6OGIDAUWZlSgpdfWcHZo57gmWcXM3HSLB57/BNUwV5+FXk2xrDLgDKCQG+XQyq+kLKyEH37ln6taZJCRIHSc87euyUek+b1Nz4dnpdOK1Sc97bUeFsAFi8UCoeVA1R88kn9XsP2rWkuLw/j+0FMys3xbZ73bfac+cxTHjStDZ2dWe7+41yu/e+X6OjIMmBAGQcf1J/f3PQG78xeg2XJL0iiMWDbCiEEJxw/GCm3jzQoJelK5jhoZD/KyvLRSg9O2I2zUjLsBzpWWxs3Q/eual22rHlwIpGtdhzl9EjwultTY7mN2oYLuNmsHwLUWzM+79/e7kWPPWZg/de9oaLKFu0cwENT5vPdsx7jjLMe40/3v0s0mv9JZ2eG635xBAeO6MvlVzzL8hVN3ZJYfAkff7yRhk1dHHJIf049ZXcaG7twHLVV8HK5gEjY5qr/Ohhj8v/LZv2CvTVf1LB8bB866siBDR2dvjtr1ur+gCzM2d1Wyk1uw/45+bqtdgE1e87qQUpJDj1kl04gKqX4yosXY9ampiRXXPkcN98ync9WtdDSkiQctgmHLQYNLKeuroMXX1rGI1POQQjBDy97hrq6DixLIgTcNuFtRl/wJMed8BD3/uldJk88lSOP2JUNGzoRQmBZEqU2D8uSJJO5PGe87WT22L0KIWDdunaOP+lhnnp6IUIIfF8XJd0SQoSA8KGHDOhUSvL+/A275ksKulhecApYfCMAbcBWChtwli9r6l9WaunBgys8ICSldHpmWIwx3VHDvHfXMfqCJ3lr+iqqq6OEwzaWpTDGkMsF/OHO07j/T2fyxpufsWpVK9OevpCGhgQX/2Aqa9e2c9/973LPvfMoLw9z043H8uhjH3HJD6bx+9tP5qc/OZRMxqO5JUV7e5q29jStrSmaW1IM3q2CR6acyxmn74nn5Qtw426eTl1dBzfe9CZTHpnfDbwxBiFwgPDuu1d6JSXKfPppc9+81Klit8RWAbS2A0DLyetMpL4hUd2rV6zLthVBoF2lpN2TmiglEAIe/PP73HX3XISAvK3cbNdsW9HcnOS99+v43kX7c9DIfjz51EIuuGAY/3zh+1z+42c55fS/AoI9dq8mXuKyePEmXn7pB/z4yuc48TuP8OB9Z/K9C/fjlVc/Ze26dqQUlJaGOGhkP0Ye2Jdo1CGb9XFdi6nTFrF4ySZ69YqRyfjcedcclixp5MTjd+OUU/ZAa2NpjRuJONTWRJMNDYkqIBwOq07f923LsqxvKoEKUL6PpRQynfYinR3Zkt69S5KAMga7qL5FlW1pSXHVNS9w++9nEgopQiHrC+AZA54XEI06vPDiMowx7LprOb++4WhcR7HPPrU8M+0i+vUrxQ8COhMZDhzRh5Ej+7FsWSPPPfM9fvD94Yw6/0mefHoh/3XlQdx+60nc+j8n8ssxR1JdFeH0M//G3X+ci+tarF7dytRpizj80AG0t2fQ2uA4iudfXMaVV7/AAw++j1JSeZ7vALJPn3iyoyNTkk57EUBZllUs/u+YDSx4ncIPfQXI5uZkOJMNnJrqaCb/f2PlK2d5lX3vvTpGnf8kr7+xksrKSHdE0BM8y5LE4y6ZjM+ceev44z3zur/v06eEIND061vK3x4Zxa4DyunqyvG3xz9h5qzVjBjeB2PgNzccw5NPnM8DD77P9y6Z2k2Un3xqAeNunk5ra5o/3f8uM2et5s4/zOGiC/dj5WctAJx0wmB0YCgvC1FZGWHCHTN5+JH50nXzQFVXxTKZbOA2NXVFAOH73eCpr/PEchvpfhEE+XM6OjJuoBFlZSEPUIE2EhBSCh7920f88PJnaGhIdKvslpxXSkE67XHqd/Zg0h2nMPLAvkyYOIuLLn6a+vpEd9QRBIZeveI8/NA59O1TQihk8dzzS7nqmhfJZHxyuYATTxjMjH9dztJljbz55mc8/8JS1qxpx3EU2axPPO5y4fee5pTv7E4s5vL6myu5+r8O5uKLh5NIZjHGYIyhrCzErRNmyYf/Oj8CUFoezgVBfq75+ftyW5VCuTXweo5cLlDGQChkB4BwHUt4XiB++7s3GTv+LRznyyq7ZUXSdhSPPfExxsDzz1zMtKcuBOCcUU/wwfz1SCkK6ShDv36lPDzlXCoqwpSUuLw1YxW33j4Dx1HkcgG77lrO/PeuJpP12bgxwaWXHsCChfVEow4tLSnGXHckp56yBzffMp2f/+xwfnbtYfzz5eXkcgFabyb5sahtbr39nfgTf/+kV6+aqOf5hlxOq6/AYecz0kJgCu5fNzYm5aWXPyMee/wTKioiCMFWEwPGgBTguha/GPMyd941hyMO34W/P34+kyeewutvrOyWxGIKauCu5Tz8l3NxHYuDR/bj6WmLmDlzdTcPnDtvHWvWtnH1VQfz8svLSaU8kskchx06gF/89+FM+8diAK65+hB+cu1LPPDge4w8sB/RiE0QmCLXFLGoZW65bebA6TNWVQ7oF0t2deXUtn3s1gE0m4lpvpjtuo6fyxnhupapq+uInDv672Xz3qujqipSCLe2P7dXURHhj/fO5bIfPcNnq1o47LBd+O1vjqWsLITW+dsrlY9Khgyp5O4/nM5uu1Vw3X8fwZVXPU9bW5olSzbx2OOfcP11R6K14ZXXPkVZkkjE4Y7fn0I67TH5rtkMGVzJmOtf5aGH5zPq3H356TWH0tqWxrJkz2cSjiPN/A/ra6uqIu0DB1Z0FaTO9Bg7TGMKHaGWBozn+WboXhWNjU1d8pxRT+yd6Mqp0pLQVlT260E0xlBREWHWO2tYsPApzj5zb846a2/2GVr7BTIuZR7Eww4dQDKZo7QkxKSJpzBnzlqenraI2289iXjc5ZVXV7BkySZy2YCbbj+Wfn1LuPyKZ+noyDD/ww00t6S45qqDmTzxVH7z2zdIpT3CYbs7Rs9njPKSv3Zde7XrKh8wltXdFau/DkTra1JIxhgTAIFlEQBi+PA+rSNH9lv19NSlI7UOrHDY2mYGZVsVtpISl5wXMOWRD3lq6kJ2H1LFWWfuzTlnDyUWc7rNUBBoTjxhMK2taXbbrYJLL3+GSXecQr9+pbzw4jLumDiLRCLLRRfux3dP35NLfjCNOXPXIqXAdS1uHns8V/xoJEuXNvL8C0spKw19+dlFHshI2EmXlLhZQPu+ry3L0oD+uqL71iQwKI4gCAKlVHb2nDWDfF9briu1znvhnSxTGiwpqawIE2jDsuVNfLLgLR5/4hO+d9H+nPndvSgrC3Xb8GQqx1VXv8D4cSfg+5pLfjCN996vw/c1w4f34aorD+aiS6Yye85aKivDfOfk3bni8pEMGVLJys9auPbn/8zb4i8nFgq0C0pKnUQ4bKeCAG1ZVncj+zdR4eKPvVwuCMJhlRkwoKx+/YZUzc4W2ophlNYGzw/I5AymUHULh21Wfd7Kb256g79M+YAhgysZde4+jBjeh+t/+SrnnD2UV15dwWOPf5yfgK2oqYlx+aUHct31rzJn3lr22qOacWOP59hjBgHw3PNLueW2GSSTOcJh+2ucnTDGIHr3ijcBmVwuF4TDTs+24m8EoJcfKgfkDhrZb9W8eRv335pR3Z50e2dn3ohHIzalpSGiUYeQaxWSpnn1zuUCWlvTKCWJxxwuvfwZtDY8+thHrF7dRmVlBK3zBaRTTh7Cn+5/lwUL6jnxhMHcfuvJ7LJLGZ6n+f3EmTz8yIdEos5WwNucSdpzj+oN5HsQvS0G30SFc4Bn2yoLmHPO2nvlo49+lE50eWEpMTvaqmEMOI7iyitGcsQRu9KnT5zysjCRiI3jqO70VxBo0mmfcMSmfmMnP/rxc6z6vJVQyEIbQ1VVFK01vq+prorw0ssr+PzzVi6/7EBuuflELEtS35Dghl+/ztszV1NZGUbrbdEsIx1HmEMPHbAWCKSUxRUAuW8qgQGF9ReWRTaZzAXV1bHGww/bZeFLL392cDgsjNbbX8FXStLenuas7+7NDb86epvnxmIOM2eu5udjXiGZzBGPu2itUWwuUzqOYsnSRrSBu+86jQsv2I9Mxuet6au4Y+IsVq9to6oqsk2mIATG8xB9+kSbDz1kwAYgcF0rw+b1JztuAwueuNhKmwmFnBQQv37MUe/OmbtuWGdXLlTITontU11NNOow7711vPdeHQcf3L9b2opFIMiT246ODFMe+ZApD8/HtiXRqPMlrykEBQmMct3Pj6Bf/1J+e9ObvPteHWvXtWPbkrLS8HbSLGG0RozYv89yoCOdzuXCYacbwK21vYltRB8O0AvoDfTKZII+oZAqf/TRj466/Y45J4dCQhfqxttX4hGCXM7HsiSjzt2HC8/fjyFDKrvV2/cDbFvxxpsrufyKZ7EshesqXNfqdjz5kQfQ8/LRirIkCxc25MttYQvXtbr55vZaFyGk+fP9Z9530EH9Fvo+zZZFPVAPNGxticS2ABTkmyh7F4Dslc0GvV1Xlf/2d2+c+vTUZfvGYkobY+T2PmuxX6azM0tJicuxxwzigvOGccgh/b/Y/7e6lVdeWcE7c9ayfHkTHR0ZbFsRDlvdidlicjZfB7a76787Ur0TQuhsDjlsn6qVTz95wf25XNDmOKoeaCgA2Ly17lWxbcNvogUAa4sgaq17SSkrb7zpjeOnTlu2ezgssCxpgmDHbGIQaLq68j1+B4zowzVXH8Lhh+1SyBRvvtRnn7Uwe85aZr2zmoULG2hpLXjxqNPN6XaiicnoQIjbbz3+kdNP3+u9LQEUQnSxjZTVtgBUQE0BvFqgNgjoJYSulVJWTHl4/oH33vfeXolETsZiVmFC268+RdVMJnMYA7fdchKjR+2TbwkR+e97HuvXdzBn7lpefe1T5r1bhxAQiTjfKCoSQuhsFjls36qVTz95wQOZTNAeCql6YFMBwEYhhL9TABZAjPcEEKjVmlrf92sdxypfubJl0F13zxky6501pclUjpBr4brqi2VIY75EHntKmZSCDRs6OezQATwz7aIvSGFRwqQUX/jNnDlrmTBxFsuWNVJS4nbHtjtAq4xSUj/04Fn3HXBA3yVBELQqpRqKAG5Py+/2AqgKjZO1PUYNUON5usa2ZSVQs2hRQ9/nnl9aPffdde66de2k0373xIuTF6KQ3ij0xRT7/kpKXEYM78N1vziCoXvXAuYri+jFCEaI/DWTyRw/ufYlZs9Z+6Wmy623fgidTiNHj9pjxv+MP/HZZDLXFY069UBjAcBtSt92A9jDFhaBqy0AWgNU+76uEYIqpWQlUJ3LBVUrVzZHlq9oZu3aNho2ddHeniGd9vD9fJE7FLIoLQ3RqzbG4MGV7L9fbwYNqtghCfJ9jWVJ2tsznH7m32hvT3dHM9sCL5NB7rF72brnn734/iAIWo1RjZZFYwHAhm3Zvu0h0lseKfILWYrdCsWaqW1Z0gZUEGhlDMpxlBg6tFYMHVob3jGVysfE2+oB7Nkv4/v5Fo7vnDyEhx6eT0V5ZKv2UAhMzjOyvMJN/OmeM54COkB1WBYd+b/pKMyVbxXAArHu7FGtd/jiSnOllOyuHQSBNlqbSmGriASBNsW+5c1gmc2526JKCiV20BHkbWSf3vFtRuj5jDrCdZQ34ZYTnuzbt3RtOh10hcOqvQd4HTuy6EbuoNfKkV9r1k5+qVTxM7/2zNf55VOaVmVosW3VmJv8flYvbjZSCkSQD1uENkhtUAUvqwDpazCQfWoZ3qy6Qviy3faMurpOttZ3JITQvo9QSvnjfnfMk0cdNWhhMplLh8Oqtcdc2gtz5N8CYL7MPy4NtGWz2Q4SXgf55VL51T6W3ICvW5E0YMkGoCk3baWnV3UkgDSWzCOoBFgyXyQxgJLgKBAQLG8l+LR1i8LC16u8EIJEIsv0GauIRBy01l9p83KekaGQlbn9luMf/+4Ze3+QTOYy0ajTvIUgJHcUjh0GUIwfr4FO13UbidtraUt3kvXbvUWNXvb+T2qx5CZv1nq86esEUC9CVg5MO7Ap9+aaNBovM24uyateJVjTAQIy93xE19WvYRI51F6VBB83b07fbCMhK6Xg3vveZV1de3cI11Nlhch729raaMufHzhzyimn7PFhMplJR6NOU+HlF0fnN1nqtWMLbRgrV3NXmRBCt1bcF2/b9S/f9176LNW+36OXBp80daVuffc44KPs/QvKMn9eUAUswddpWRpqAOqSP31L6K5so33ZsGZtyUz6jvfxXl9DbsY6I2IO6VvfRbgWbAcpDgKDZUlefmUFD//1Q0pLw19wHlIKHQSIbBZ50EG9l7z8wsUPjBjeZ1kymUlGo6HGgtYUtaf9m65kt7YPuKlKcF7QRPyyGMHehrFjGto6ldNuX9V1/exy3ZE7OjN5frtpz/ZN3TznyGBhU1+d9WsyTywZrFe0lacf+NizP21uxzPS1CVag02pKlUW9f2lzb5uSWeslI7JvnH8lR2GtC9IBZs9xFcAp5QIlBK5F19apm74zRtOOLR5GlIIHWgj02lkebnb9f1Lhr111ZWHzAGS6XQuEY2GWgoqWwSvbXv43k564SWiIK6DBVQLxus2Ju7qGwLVmCoVlaHbdF1iPzms+t7MlEUHyMrIRmtw5fJg4vzdrJN2mWcCHQ4eXVxjHdXnM92Wbc5MeK9cuCSsY3ZtdS/aK5luz5RmHvqwTA3ra8thlUmV9Z18AKIlWpBnN8YICCxLZQB/4uRZJX9+aH4oHLJQShZzCzKdQ4ZDMjjx+F0++u2NR82orS2p87wgZwwd4bCz5YLrjp0Bb7sBHJf3h6IB7wEH+5ku7v5XQFBrCK6p4PqXaQdKQ5i56TJgQPsJT1+lPR2Of/KDPxVKglVdY94+SbSmSkWpu6nkjdGfk18RFNL1yVK9uLlaOCGcw/qut4ZWJxha7fp+IIQQQkmpyTfoBIB+7/31sd/fMav3goX1kdLSkNFai1zOiEALEY9Z2cMP7bPkv648aO5++/VeBWSTyVwqGnV60pQigJ3fxo5HYgfPNfP5sT2M/YdlSK0tYUyzYYYF95m32Vsc8/wF4fTg2vJwZ7rKDzsl1oBYiJAVw+h40JkrAxEVla6LJiwFYWzL1Rkv4v1jRa3cqzKwR/bOFuxy0ZhbXV3Z0KIljbH5H9SVzp5TV7lwUX2570MoZOP7BseBPr3j9YceMmDJJRfvv2DgwPL1QCaZzOVc1+m0rPwq9i0ATH1be8nsWE0DIwSbb2wYKwXj9RbUwmbztieleMSxuzfdKa6/KO5eVIxo8u3EGnfJsk2V73+wvveixZtqV65srtqwMVHS2Rng+wbbEZTElI7H3URNTaxx6N41a487duBnRx45sK4AjpfJBDkpSTqOKm55kugBYGJHed63CmARRBhX6B0ZamCJEYz/QvuDMUawoCHC4F7xbJAtcUNulMCLYYsIlhXuAV6+Dzkb5CMbW1gzZ62pXbCgobq1LR31/cByXUtHo06urCKcqqmKdPXvV9Y5ZHBleyTmdBZCriAICNLpXC5ky5RlSBGyirsW5QFsIMG10zJMO0+DoSgE+blMk5tN1RIzfguB+FYBnMpodR7Tgu3+ToIJjMPmnYtiQAldfowQDpZV3ISsuOGE1aM3R2zxjEXV9gCdAx2kc1pKmXWVlSGvqsVtn3Js3v4p/VUUpcgsvmYeentLt9ufjemhrlnu2TdD0B8CJE5dnJ8u2vKcdUyuKEfZXXhGVZWo+OE1buiAXWxuGp4uTLAWjwg2FhuTsWBZa3lgo4LAWJ7RSlhKoLUACRKjhte0A1p83BhxPAITU2nr4D4thWtlvMeWx0xzMuNs8DPsU7uRH+6aQAgtwKxjcrg/JSXgmQQpHee6FoEwqxlbVkv5Ph6mQiLSOfzllYyp+9YlsAjMBiacXEL4Vp9g/ziuAkiQCSysTxJkf9uHX75mGGsJxvtNTHo9hnNYF9kgv9jLGInMKak2yVL3pdjSi+9O9ZJ2hEiu49inRzuzGiemhBdsQe6NQohAkSmdMfo8MgEd33n26WhgRZIx83Flx7Xns7zdZs+yjS1l914d7tC3AX6S7Is1/PLi4rM0MvFfYeyDBMLK4v+gkuumNTHxuhD2GBerl41LgEeaXMIn+GsZsetgYwDjjdiGJG57tSajlWC8bmTS6WWEX7ORB4SwVDvpljZSrSFsZSEPKCP0ahN3nCkY7xfsS9xCxQSiNI5bGidcVkakJqStfWNt4jctvR/4e+O4qS1As17SnHC0iphAx+1ARt1AFUcsFFhRfF2WXt7UEHzU0IAfRG2tIqbLt4AGFm3YKKTIJTqaH0jjrVfIuI110SYm7wfjgmbuPCGGe7yDFU+RW1LJddMamXhBFfFJAtGrg0xjMx2z2kltNJh4GfGfttB5c16Tpm4Tn60vNgQBU/UmxsbAPGCADJ6Xwf9FFvbMIfbI/+15ARqBfKCVCaX5Cwtf59dppjrJnN9J9rhmun6UJPt5Bymvkvjx0fHNVwkhjGlKZ3MEJoprPKHv96LBsEypONArk/tnSuVwWeIcEPf1ysSED9qNwQvAoE1+s8Xz9vGMGWsNZHxGE/zCRxPBERLzC4EwBv0rhdQZvEBjri082yUaHWTx2wOyw6oZc3SAPsBHrweNQVz2KXe7gvMCsw0t3QaRnioFImhk0jExnL6A8dAvVTPmrh4n3dXEpMMcrHOjuL2SmBOBf4ApLHrA2HS9Uc74dmBGC3csFziz0uS0gAuAu0AaQFhIMGZTRXLMoi8Z+SuhkTuLm6sKKFYAxwrBeL9w/j+bmPhGmOhJYE5r4o6LDfpoCymzeI/24pfzugtxGCEhHCbyu07u/lMJP1u6ntv2Lye2i0BYG2gNil1vO6HCxRDO7KuQRiGFRLwxldHK8KBteNCeymgl4fXCd8bAMAoVjeJV0lilhqlqBmOtTpIfZvHqJUIC/fPnBr6FIkEmADOmiUn1Laxb38SkOp/76puYeAuAQn/tC5/GtHyVD3N9F9lAIstBPOxgWZ1kEhJ141jGyoJ5eUghpI3lulhX+/gftnPnO+VEL1pJc10V171/DOO3K7mwfXsmICIChMag0anRTNOw0bzNRjOaaTqApEaTXyYnv5TGd7ADwXnBsYz3W6gPFLKYd7Pz15dGAAEaBztWQqhXHLdXBLufItQLTPW2nvE8pgWGqaqCXy7MEvyllLA0YOKEhIc3oYrrNowDOZaxsppfvtBE4mIwqwI0JYRDJYSPCGH/sR/xdY3c8Yt8v+XYbeKzndkYmjXGqHxNrXehmdM6Ji/ifhOmj0JiwASYli1/72Esw1gL0I1Uu4Z0Vb7IKZJ5NTHSRxMjJNN4D6fxH7ERyiB8QZc0OA0GRDNB0OOdixmMtZaAnMHYAvltE2MZa0De3En6gghOaRupNRmsu/LSNz4YB4xjrCX41RPr+PmzZex6UhfZUzX6WIEYIiAUwpnczF2vCn6+7Kuire0GcBpLTWGCc3MEQiC0RF1oMBMF+U0MDYg25EVZfC0Q0obZW2RDjSTTXPTOrUy+zMGuIB8NLC3YGUtjcFEihbeoljGzv+p5mnpwL4Hwji1cc8tjNGNbaoi2lREpS5OrH8CYdB4IjGGs1ULsDY/7dmkn+XEJPxsFvADQxuRbHZwbBODjjQCWvZ1/Y98MwLxajJVw/fwmJs6oInZsQLB/G3e+1sLEKfmbysslckQUlxa63qmia25hmr7GaIFRithdTUxMCsQg4BQfTQhHGMw9xT46idApchrMWS1MrjJoZQrN3RFsUmTvs7EyPkak8bSBPZuZ9Dedj891YZWtzpK9fgW5tlqkLKwIkXlPOs4YhirBeX4zE7WFPchCDWxm8n975J6XKKUxfQ0GiZAeei3AMQw130I+0CD54/cTZF6J4O4r4SQDJxWlQWNIkFmssC8et1lKIi6O9AnCUaI/Kp6ZJYtPkGol+dsarn+1mDkNEZIeXbKS6NFgH/0FA4KLT8PLGdxFNtm4i4WL1cvBveSLMYFmPW23HsuNTU1MjFm4ElIR0d2IP428KdA3dJGcHsaOC8RdCfQEEG4ZEQSCFhJP1ZCcm5fa84KdAlAwXhvGiSp+tn4ttx8tEL82mDN8dH8BRiHXC8RL7WRu34VftxmmqvH5ab+TJtOexgsydOg8nZEJhVyWwHumN9cvns+P7QP5swdyY5bMv7L4QZYuoGeezpgQtjCopizZQGJeTpFzAoyGjO5BWQUY7SMSBThfD8jUgFm+eS7TgrGMleP51fxNTPhOjNBNOfQIEJUS0ZUku8Ignqxi1z/AedsVC/8/sziErmN6+pwAAAAASUVORK5CYII=" alt="ODELYS"></div>'
+    +'<div class="login-title">ODELYS Livraisons</div>'
+    +'<div class="login-sub">Choisissez votre profil</div>'
+    +'<button class="lbtn lba" data-a="adl">Acces Admin / Commercial</button>'
+    +'<div style="text-align:center;font-size:11px;color:var(--mut);margin:.5rem 0">ou</div>'
+    +'<select class="livsel" id="livSel">'+lo+'</select>'
+    +'<button class="lbtn lbl" data-a="lvl">Acces Livreur</button>'
+    +(FB_URL?'':'<div class="al al-w" style="margin-top:1rem;font-size:11px">⚠ Firebase non configure — les livreurs ne verront pas les commandes. <span style="cursor:pointer;text-decoration:underline;font-weight:700" data-a="fbc">Configurer</span></div>')
+    +'</div></div>';
+}
+function doAdminLogin(){var pw=prompt("Code admin :");if(pw===ADMIN_PWD){MODE="admin";render();}else alert("Code incorrect");}
+function doLivLogin(){var s=document.getElementById("livSel");if(!s||!s.value){alert("Choisissez votre nom");return;}LIV_ID=s.value;MODE="livreur";fbLoad(render);}
+
+// ═══ FIREBASE CONFIG ═════════════════════════════
+function openFbConfig(){
+  var html='<div class="mbar"></div><div class="mtl">Configuration Firebase</div>'
+    +'<div class="al al-i" style="font-size:12px"><b>Pourquoi Firebase ?</b> Sans Firebase, les donnees restent sur votre appareil uniquement. Les livreurs ne verront rien sur leur telephone.<br><br>'
+    +'<b>5 min pour configurer :</b><br>'
+    +'1. Allez sur <b>console.firebase.google.com</b><br>'
+    +'2. Cliquez "Commencer par configurer un projet" &rarr; Nom: <b>odelys</b><br>'
+    +'3. Menu gauche: <b>Build &rarr; Realtime Database</b><br>'
+    +'4. Cliquez <b>Create Database</b> &rarr; Start in test mode &rarr; Enable<br>'
+    +'5. Copiez l\'URL affichee (ex: https://odelys-abc-default-rtdb.europe-west1.firebasedatabase.app)<br>'
+    +'6. Collez-la ci-dessous et cliquez Enregistrer</div>'
+    +'<div class="fg" style="margin-top:1rem"><label>URL Firebase Realtime Database</label>'
+    +'<input id="fburl" value="'+FB_URL+'" placeholder="https://odelys-...-default-rtdb.....firebasedatabase.app" style="font-size:12px"></div>'
+    +'<div style="display:flex;gap:8px;margin-top:4px">'
+    +'<button data-a="cov" style="flex:1;padding:10px;border:1px solid var(--bdr);background:white;border-radius:8px;cursor:pointer;font-weight:600">Annuler</button>'
+    +'<button data-a="sfb" class="btn btnb" style="flex:2;padding:10px">Enregistrer</button>'
+    +'</div>';
+  document.getElementById("mdc").innerHTML=html;
+  document.getElementById("ov").classList.add("show");
+}
+function saveFbConfig(){
+  var u=(document.getElementById("fburl").value||"").trim().replace(/\/$/,"");
+  FB_URL=u;sv();closeOv();
+  if(FB_URL){fbLoad(function(){render();startSync();alert("Firebase configure! Synchronisation en cours...");});}
+  else render();
+}
+
+// ═══ DASHBOARD ════════════════════════════════════
+function pgDB(){
+  var today=td();
+  var allToday=CMDS.filter(function(c){
+    return (c.dc===today||c.dls===today)&&c.lid;
+  });
+  var livrees=allToday.filter(function(c){return c.s==="Livree";});
+  var annulees=allToday.filter(function(c){return c.s==="Annulee";});
+  var actives=allToday.filter(function(c){return c.s!=="Livree"&&c.s!=="Annulee";});
+  var tq=allToday.reduce(function(s,c){return s+(+c.q||0);},0);
+  var lq=livrees.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+  var vt=livrees.reduce(function(s,c){return s+(+c.vi||0);},0);
+  var pct=allToday.length?Math.round(livrees.length/allToday.length*100):0;
+
+  var h='<div class="shd"><b style="color:var(--b)">Dashboard — '+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</b>'
+    +'<button class="btn btnp bsm" data-a="new-cmd">+ Commande</button></div>';
+
+  if(!FB_URL) h+='<div class="al al-r" style="font-size:12px">⚠ Firebase non configure</div>';
+
+  // ── Barre de progression globale ──────────────────────────────
+  h+='<div class="card" style="margin-bottom:.75rem">';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+  h+='<span style="font-size:13px;font-weight:700;color:var(--b)">Avancement du jour</span>';
+  h+='<span style="font-size:20px;font-weight:900;color:'+(pct===100?'#4CAF50':'var(--b)')+'">'+pct+'%</span>';
+  h+='</div>';
+  h+='<div style="height:8px;background:var(--gray);border-radius:4px;overflow:hidden;margin-bottom:10px">';
+  h+='<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#3D3DB5,#E5007D);border-radius:4px;transition:width .5s"></div>';
+  h+='</div>';
+  // KPIs
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
+  h+='<div style="background:var(--bl);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">Commandées</div><div style="font-size:22px;font-weight:900;color:var(--b)">'+tq+'</div></div>';
+  h+='<div style="background:var(--gl);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">Livrées</div><div style="font-size:22px;font-weight:900;color:#2E7D32">'+lq+'</div></div>';
+  h+='<div style="background:#FFF8E1;border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">Vides</div><div style="font-size:22px;font-weight:900;color:#854F0B">'+vt+'</div></div>';
+  h+='<div style="background:#FFEBEE;border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">En attente</div><div style="font-size:22px;font-weight:900;color:#C62828">'+actives.length+'</div></div>';
+  h+='</div></div>';
+
+  if(pct===100&&allToday.length>0) h+='<div class="al al-ok">🎉 Toutes les livraisons du jour sont terminées !</div>';
+
+  // ── Par livreur ────────────────────────────────────────────────
+  h+='<div class="card"><div style="font-size:13px;font-weight:700;color:var(--b);margin-bottom:10px">Circuits du jour</div>';
+  var any=false;
+  LV.forEach(function(l,i){
+    var cs=livCmdsActive(l.id);
+    var csLiv=CMDS.filter(function(c){return c.lid===l.id&&c.s==="Livree"&&(c.dc===today||c.dls===today);});
+    var total=cs.length+csLiv.length;
+    if(!total)return;
+    any=true;
+    var col=DC[i%DC.length];
+    var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
+    var uLiv=csLiv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+    var pctL=total?Math.round(csLiv.length/total*100):0;
+    var cirs=getCircuits(l.id);
+
+    h+='<div style="border:1px solid var(--bdr);border-radius:10px;margin-bottom:10px;overflow:hidden">';
+    // Livreur header
+    h+='<div style="display:flex;align-items:center;gap:9px;padding:10px 12px;background:'+col+'12;border-bottom:1px solid var(--bdr)">';
+    h+='<div style="width:36px;height:36px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:white;flex-shrink:0">'+ini(l.n)+'</div>';
+    h+='<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+'</div>';
+    h+='<div style="height:4px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;width:'+pctL+'%;background:'+col+';border-radius:2px"></div></div>';
+    h+='<div style="font-size:10px;color:var(--mut);margin-top:2px">'+csLiv.length+'/'+total+' livrés &mdash; '+(cirs.length>1?cirs.length+' circuits':'1 circuit')+'</div>';
+    h+='</div>';
+    h+='<div style="text-align:right"><div style="font-size:22px;font-weight:900;color:'+col+'">'+csLiv.length+'</div><div style="font-size:10px;color:var(--mut)">/ '+total+'</div></div>';
+    h+='</div>';
+
+    // Circuit stops - mirror of affectation
+    if(cs.length+csLiv.length>0){
+      h+='<div style="padding:8px 12px">';
+      // Active stops
+      if(cs.length){
+        h+='<div style="font-size:10px;font-weight:700;color:var(--mut);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">En cours ('+cs.length+')</div>';
+        cs.forEach(function(c,si){
+          h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#FFF8EC;border-radius:7px;margin-bottom:3px">';
+          h+='<div style="width:18px;height:18px;border-radius:50%;background:#FB8C00;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(si+1)+'</div>';
+          h+='<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.cn+'</div>';
+          h+='<div style="font-size:10px;color:var(--mut)">'+c.c+'</div></div>';
+          h+='<div style="font-size:11px;font-weight:700;color:#FB8C00">'+c.q+' bonb.</div>';
+          if(c.pri==="Critique") h+='<div style="background:#FFEBEE;color:#C62828;padding:1px 5px;border-radius:10px;font-size:9px;font-weight:700">!</div>';
+          h+='</div>';
+        });
+      }
+      // Delivered stops
+      if(csLiv.length){
+        h+='<div style="font-size:10px;font-weight:700;color:var(--mut);margin:6px 0 5px;text-transform:uppercase;letter-spacing:.5px">Livrés ('+csLiv.length+')</div>';
+        csLiv.forEach(function(c,si){
+          h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#F1FFF1;border-radius:7px;margin-bottom:3px">';
+          h+='<div style="width:18px;height:18px;border-radius:50%;background:#4CAF50;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">✓</div>';
+          h+='<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.cn+'</div>';
+          h+='<div style="font-size:10px;color:var(--mut)">'+c.c+'</div></div>';
+          h+='<div style="font-size:11px;font-weight:700;color:#2E7D32">'+(c.qr||c.q)+' bonb.</div>';
+          if(c.bl) h+='<div style="background:#E8F5E9;color:#2E7D32;padding:1px 5px;border-radius:10px;font-size:9px">'+c.bl+'</div>';
+          h+='</div>';
+        });
+      }
+      // Circuit route buttons
+      if(cirs.length){
+        h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">';
+        cirs.forEach(function(cir,ci){
+          h+='<button class="btn bsm btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">🗺 Circuit '+(ci+1)+' — '+cir.reduce(function(s,c){return s+(+c.q||0);},0)+' bonb.</button>';
+        });
+        h+='</div>';
+      }
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  if(!any) h+='<div class="em">Aucune livraison affectee ce jour</div>';
+  h+='</div>';
+  return h;
+}
+
+function pgCMD(){
+  var tc=CMDS.filter(function(c){return c.s!=="Livree"&&c.s!=="Annulee";});
+  tc.sort(function(a,b){
+    // Future commands at bottom
+    var af=a.dls&&parseDate(a.dls)>parseDate(td())?1:0;
+    var bf=b.dls&&parseDate(b.dls)>parseDate(td())?1:0;
+    if(af!==bf)return af-bf;
+    var po={"Critique":0,"Importante":1,"Normale":2};
+    return (po[a.pri||"Normale"]||0)-(po[b.pri||"Normale"]||0);
+  });
+  var totalQ=tc.reduce(function(s,c){return s+(+c.q||0);},0);
+  var h='<div class="shd"><b style="color:var(--b)">Commandes</b><button class="btn btnp" data-a="new-cmd">+ Commande</button></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:10px">'
+    +'<div style="background:var(--bl);border-radius:8px;padding:7px 16px;display:flex;align-items:center;gap:8px">'
+    +'<span style="font-size:24px;font-weight:900;color:var(--b)">'+tc.length+'</span>'
+    +'<span style="font-size:11px;color:var(--mut)">clients</span>'
+    +'</div>'
+    +'<div style="background:var(--gl);border-radius:8px;padding:7px 16px;display:flex;align-items:center;gap:8px">'
+    +'<span style="font-size:24px;font-weight:900;color:#2E7D32">'+totalQ+'</span>'
+    +'<span style="font-size:11px;color:var(--mut)">bonbonnes</span>'
+    +'</div>'
+    +'</div>';
+  if(!tc.length) return h+'<div class="em">Aucune commande.</div>';
+  tc.sort(function(a,b){var po={"Critique":0,"Importante":1,"Normale":2};return (po[a.pri||"Normale"]||0)-(po[b.pri||"Normale"]||0);});
+  tc.forEach(function(c){
+    h+='<div class="or" style="'+(c.pri==="Critique"?"border-color:#E53935":c.pri==="Importante"?"border-color:#FB8C00":"")+'">'
+      +'<div style="font-size:10px;color:var(--mut);font-weight:600;min-width:68px">'+c.id+'</div>'
+      +'<div style="flex:1;min-width:120px"><div style="font-weight:700">'+c.cn+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+c.c+' &mdash; '+c.w+'</div>'
+      +(c.dls?'<div style="font-size:11px;color:'+(parseDate(c.dls)>parseDate(td())?'#1565C0':'var(--gd)')+'">📅 '+(parseDate(c.dls)>parseDate(td())?'Prévue le ':'Dû le ')+c.dls+'</div>':'')
+      +(c.note?'<div style="font-size:11px;color:#7B1FA2">📌 '+c.note+'</div>':'')
+      +(c.rem?'<div style="font-size:11px;color:#854F0B">💬 '+c.rem+'</div>':'')
+      +'</div>'
+      +'<b style="color:var(--gd)">'+c.q+'</b>'
+      +'<div style="font-size:11px">'+(c.lid?'<span style="color:'+lcolor(c.lid)+';font-weight:700">'+lname(c.lid)+'</span>':'<span style="color:#E53935">—</span>')+'</div>'
+      +stTag(c.s||"A programmer")+priTag(c.pri||"Normale")
+      +'<button class="btn bxs" data-a="edit-cmd" data-id="'+c.id+'">Edit</button>'
+      +'<button onclick="delCmd(this.dataset.id)" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;background:white;color:#C62828">🗑</button>'
+      +'</div>';
+  });
+  return h;
+}
+
+function pgAFF(){
+  var today2=parseDate(td());
+
+  // Commandes affectables : dls <= today OU pas de dls
+  var na=CMDS.filter(function(c){
+    if(c.lid||c.s==="Annulee"||c.s==="Livree")return false;
+    var d=c.dls?parseDate(c.dls):null;
+    return !d||d<=today2;
+  });
+
+  // Commandes futures non affectées
+  var future=CMDS.filter(function(c){
+    if(c.lid||c.s==="Annulee"||c.s==="Livree")return false;
+    var d=c.dls?parseDate(c.dls):null;
+    return d&&d>today2;
+  });
+
+  var h='<b style="color:var(--b);display:block;margin-bottom:.875rem">Affectation des tournees</b>';
+
+  // ── Non affectées groupées par commune ─────────────
+  if(na.length){
+    // Grouper par commune
+    var byC={};
+    na.forEach(function(c){var k=c.c||c.w||"Autre";if(!byC[k])byC[k]=[];byC[k].push(c);});
+    var communes=Object.keys(byC).sort(function(a,b){
+      return byC[b].reduce(function(s,c){return s+(+c.q||0);},0)
+            -byC[a].reduce(function(s,c){return s+(+c.q||0);},0);
+    });
+    h+='<div class="al al-i" style="font-size:12px">📍 Groupées par zone géographique — Cliquez sur un livreur pour affecter toute une commune</div>';
+    communes.forEach(function(com){
+      var cs=byC[com];
+      var tot=cs.reduce(function(s,c){return s+(+c.q||0);},0);
+      h+='<div class="cgrp">'
+        +'<div class="cgrp-hd">'
+        +'<span>📍</span>'
+        +'<span style="font-weight:700;flex:1">'+com+'</span>'
+        +'<span class="tag tag-ap">'+cs.length+' cmd — '+tot+' bonb.</span>'
+        +'</div>'
+        +'<div class="cgrp-bd">'
+        // Boutons livreurs pour "Affecter tout"
+        +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center">'
+        +'<span style="font-size:11px;color:var(--mut);font-weight:600">Affecter tout :</span>';
+      LV.forEach(function(l,i){
+        var d=l.cap-capUsed(l.id);
+        var col=DC[i%DC.length];
+        h+='<button class="btn bxs" data-a="afc" data-grp="'+com+'" data-liv="'+l.id+'"'
+          +' style="background:'+col+'22;color:'+col+';border-color:'+col+'66;font-size:11px">'+l.n+' ('+d+')</button>';
+      });
+      h+='</div>';
+      // Lignes individuelles
+      cs.forEach(function(c){
+        var lo="<option value=''>— livreur —</option>";
+        LV.forEach(function(l){lo+='<option value="'+l.id+'">'+l.n+'</option>';});
+        h+='<div class="or" style="margin-bottom:4px">'
+          +'<div style="flex:1"><b style="font-size:12px">'+c.cn+'</b> '+priTag(c.pri||"Normale")
+          +(c.dls?'<span style="font-size:10px;color:var(--gd);margin-left:4px">📅 '+c.dls+'</span>':'')
+          +'<div style="font-size:10px;color:var(--mut)">'+c.a.substring(0,42)+'</div></div>'
+          +'<b style="color:var(--gd)">'+c.q+'</b>'
+          +'<select data-a="aff" data-id="'+c.id+'" style="width:120px;font-size:12px;padding:5px">'+lo+'</select>'
+          +'</div>';
+      });
+      h+='</div></div>';
+    });
+  } else {
+    h+='<div class="al al-ok">Toutes les commandes du jour sont affectées !</div>';
+  }
+
+  // ── Commandes futures ──────────────────────────────
+  if(future.length){
+    h+='<div class="card" style="border-color:#3D3DB5;margin-top:.5rem">'
+      +'<div style="font-size:12px;font-weight:700;color:#3D3DB5;margin-bottom:8px">📅 À venir — '+future.length+' commande(s) (modifier la date pour affecter)</div>';
+    future.forEach(function(c){
+      h+='<div class="or" style="background:#F0F4FF;margin-bottom:4px">'
+        +'<div style="flex:1"><b style="font-size:12px">'+c.cn+'</b>'
+        +'<span style="font-size:10px;color:#3D3DB5;font-weight:700;margin-left:6px">📅 '+c.dls+'</span>'
+        +'<div style="font-size:10px;color:var(--mut)">'+c.c+'</div></div>'
+        +'<b style="color:var(--gd)">'+c.q+'</b>'+priTag(c.pri||"Normale")
+        +'<button data-a="edit-cmd" data-id="'+c.id+'" class="btn bxs" style="font-size:11px">✏ Modifier</button>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+
+  // ── Par livreur avec circuits Google Maps ──────────
+  LV.forEach(function(l,i){
+    var cs=livCmds(l.id);
+    var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
+    var pct=Math.min(100,Math.round(u/l.cap*100));
+    var col=DC[i%DC.length],bc=pct>90?"#E53935":pct>70?"#FB8C00":col;
+    var cirs=getCircuits(l.id);
+    h+='<div class="card"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">'
+      +'<div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white">'+ini(l.n)+'</div>'
+      +'<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+' — '+l.v+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+u+'/'+l.cap+' bonb. — '+(cirs.length>1?'<b style="color:#E5007D">'+cirs.length+' circuits</b>':'1 circuit')+'</div>'
+      +'<div style="height:3px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden">'
+      +'<div style="height:100%;background:'+bc+';width:'+pct+'%"></div></div></div>';
+    // Boutons circuits Google Maps
+    if(cs.length){
+      h+='<div style="display:flex;flex-direction:column;gap:3px">';
+      cirs.forEach(function(cir,ci){
+        var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
+        h+='<button class="btn bsm btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">'
+          +'🗺 Circuit opt.'+(ci+1)+' ('+cload+' bonb.) '
+          +cir.map(function(x){return x.cn.substring(0,5);}).join(' · ')
+          +'</button>';
+      });
+      h+='</div>';
+    }
+    h+='</div>';
+    cs.forEach(function(c,ci){
+      h+='<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--gray);border-radius:7px;margin-bottom:3px;font-size:12px">'
+        +'<span style="background:'+col+';color:white;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">'+(ci+1)+'</span>'
+        +'<span style="flex:1;font-weight:600">'+c.cn+'</span>'
+        +(c.dls&&c.dls!==td()?'<span style="font-size:10px;color:var(--b)">📅 '+c.dls+'</span>':'')
+        +'<span style="color:var(--mut);font-size:10px">'+c.c+'</span>'
+        +'<b style="color:var(--gd)">'+c.q+'</b>'+stTag(c.s||"A programmer")
+        +'<button data-a="mup" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 5px;border:1px solid var(--bdr);border-radius:5px;cursor:pointer;background:white" title="Monter">↑</button>'
+        +'<button data-a="mdn" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 5px;border:1px solid var(--bdr);border-radius:5px;cursor:pointer;background:white" title="Descendre">↓</button>'
+        +'<button data-a="unaff" data-id="'+c.id+'" style="padding:2px 7px;font-size:11px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white">x</button>'
+        +'</div>';
+    });
+    if(!cs.length) h+='<div style="font-size:12px;color:var(--mut);text-align:center;padding:5px">Aucune commande</div>';
+    h+='</div>';
+  });
+  return h;
+}
+
+function pgLV(){
+  var base=window.location.origin+window.location.pathname;
+  var h='<div class="shd"><b style="color:var(--b)">Livreurs ('+LV.length+')</b><button class="btn btnp bsm" data-a="olv">+ Ajouter</button></div>';
+  if(!FB_URL) h+='<div class="al al-r" style="font-size:12px">⚠ Sans Firebase les livreurs ne verront pas les commandes. <span style="cursor:pointer;text-decoration:underline;font-weight:700" data-a="fbc">Configurer Firebase</span></div>';
+  LV.forEach(function(l,i){
+    var link=base+"?liv="+l.id;
+    var cs=livCmds(l.id);
+    var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
+    var col=DC[i%DC.length];
+    var cirs=getCircuits(l.id);
+    h+='<div class="lv-card">'
+      +'<div style="width:46px;height:46px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:white;flex-shrink:0">'+ini(l.n)+'</div>'
+      +'<div style="flex:1">'
+      +'<div style="font-weight:700;font-size:15px;color:'+col+'">'+l.n+'</div>'
+      +'<div style="font-size:12px;color:var(--mut)">'+l.v+' &mdash; Capacite: <b>'+l.cap+'</b> bonbonnes</div>'
+      +(l.tel?'<div style="font-size:11px;color:var(--mut)">📞 '+l.tel+'</div>':'')
+      +(l.zone?'<div style="font-size:11px;color:var(--b)">📍 '+l.zone+'</div>':'')
+      +'<div style="font-size:11px;color:var(--mut);margin-top:4px">'+cs.length+' livr. auj. &mdash; '+u+' bonb. &mdash; '+(cirs.length>1?cirs.length+' circuits':'1 circuit')+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">';
+    cirs.forEach(function(cir,ci){
+      h+='<button class="btn bxs btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">🗺 Opt.'+(ci+1)+' '+cir.reduce(function(s,c){return s+(+c.q||0);},0)+' bonb. '+cir.map(function(x){return x.cn.substring(0,5);}).join(' ')+'</button>';
+    });
+    h+='</div>'
+      +'<div style="margin-top:8px;padding:7px 9px;background:var(--gray);border-radius:8px;display:flex;align-items:center;gap:7px">'
+      +'<div style="font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--b)">'+link+'</div>'
+      +'<button class="btn bxs" data-a="copy" data-url="'+link+'">Copier</button>'
+      +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:4px">'
+      +'<button class="btn bxs" data-a="olv" data-id="'+l.id+'">Modifier</button>'
+      +'<button data-a="dlv" data-id="'+l.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;background:white;color:#C62828">Suppr.</button>'
+      +'</div></div>';
+  });
+  return h;
+}
+
+function pgCL(){
+  var q=(CLS_Q||"").toLowerCase();
+  var list=q?CL.filter(function(c){return c.n.toLowerCase().indexOf(q)>=0||(c.c||"").toLowerCase().indexOf(q)>=0||(c.w||"").toLowerCase().indexOf(q)>=0;}):CL.slice(0,40);
+  var h='<div style="display:flex;gap:8px;margin-bottom:.75rem">'
+    +'<input id="cls" placeholder="Rechercher (nom, commune, wilaya)..." oninput="CLS_Q=this.value;document.getElementById(\'pg\').innerHTML=pgCL()" value="'+q+'" style="flex:1">'
+    +'<button class="btn btnp bsm" data-a="ocl">+ Ajouter</button></div>';
+  h+='<div style="font-size:11px;color:var(--mut);margin-bottom:.5rem">'+CL.length+' clients au total'+(q?' &mdash; '+list.length+' resultats':'')+'</div>';
+  list.forEach(function(c,i){
+    h+='<div class="clrow">'
+      +'<div style="width:32px;height:32px;border-radius:50%;background:'+DC[i%DC.length]+';display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;color:white;flex-shrink:0">'+ini(c.n)+'</div>'
+      +'<div style="flex:1"><div style="font-weight:700;font-size:12px">'+c.n+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+c.w+' &mdash; '+c.c+'</div>'
+      +(c.p?'<div style="font-size:11px;color:var(--mut)">📞 '+c.p+'</div>':'')
+      +'</div>'
+      +'<button data-a="ocl" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white">Edit</button>'
+      +'<button data-a="dcl" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFE8F4;border-radius:6px;cursor:pointer;background:white;color:#E5007D">x</button>'
+      +'</div>';
+  });
+  if(!q&&CL.length>40) h+='<div style="font-size:12px;color:var(--mut);text-align:center;padding:.5rem;cursor:pointer" data-a="ocl">'+( CL.length-40)+' autres &mdash; utilisez la recherche ci-dessus</div>';
+  return h;
+}
+
+function pgBIL(){
+  var tc=CMDS.filter(function(c){return c.dc===td();});
+  var lv=CMDS.filter(function(c){return c.s==="Livree"||c.s==="Annulee";}).sort(function(a,b){
+    var da=parseDate(a.dl||a.dc), db=parseDate(b.dl||b.dc);
+    if(da&&db)return db-da;
+    return 0;
+  });
+  var livrees=lv.filter(function(c){return c.s==="Livree";});
+  var annulees=lv.filter(function(c){return c.s==="Annulee";});
+  var tq=tc.reduce(function(s,c){return s+(+c.q||0);},0);
+  var lq=livrees.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+  var vi=livrees.reduce(function(s,c){return s+(+c.vi||0);},0);
+  var h='<div class="shd"><b style="color:var(--b)">Bilan &mdash; '+new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b>'
+  +'<div style="display:flex;gap:6px">'
+  +'<button class="btn bsm btng" onclick="exportCSV()">⬇ Excel</button>'
+  +'<button class="btn bsm" style="background:#0F9D58;color:white;border-color:#0F9D58" onclick="openGasConfig()">📊 Sheets</button>'
+  +'<button class="btn bsm" style="background:#C62828;color:white;border-color:#C62828" onclick="clearAll()">🗑 Tout effacer</button>'
+  +'</div></div>'
+  h+='<div class="g4">'
+    +'<div class="kc"><div class="ka" style="background:var(--b)"></div><div class="kl">Commandees</div><div class="kv" style="color:var(--b)">'+tq+'</div></div>'
+    +'<div class="kc"><div class="ka" style="background:var(--g)"></div><div class="kl">Livrees</div><div class="kv" style="color:var(--gd)">'+lq+'</div></div>'
+    +'<div class="kc"><div class="ka" style="background:#E5007D"></div><div class="kl">Restantes</div><div class="kv" style="color:#E5007D">'+(tq-lq)+'</div></div>'
+    +'<div class="kc"><div class="ka" style="background:#854F0B"></div><div class="kl">Vides</div><div class="kv" style="color:#854F0B">'+vi+'</div></div>'
+    +'</div>'
+    +'<div class="card"><b style="color:var(--b);display:block;margin-bottom:8px">Par livreur</b>';
+  LV.forEach(function(l,i){
+    var cs=livCmds(l.id);if(!cs.length)return;
+    var llv=cs.filter(function(c){return c.s==="Livree";});
+    var lq2=llv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+    var lv2=cs.reduce(function(s,c){return s+(+c.vi||0);},0);
+    var col=DC[i%DC.length];
+    h+='<div class="or" style="border-left:3px solid '+col+'">'
+      +'<div style="width:32px;height:32px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;flex-shrink:0">'+ini(l.n)+'</div>'
+      +'<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+'</div><div style="font-size:11px;color:var(--mut)">'+llv.length+'/'+cs.length+' livraisons</div></div>'
+      +'<div style="text-align:center;min-width:45px"><div style="font-size:18px;font-weight:800;color:var(--gd)">'+lq2+'</div><div style="font-size:10px;color:var(--mut)">bonb.</div></div>'
+      +'<div style="text-align:center;min-width:45px"><div style="font-size:18px;font-weight:800;color:#854F0B">'+lv2+'</div><div style="font-size:10px;color:var(--mut)">vides</div></div></div>';
+  });
+  h+='</div>';
+  // Delivered commands list - most recent first
+  if(lv.length>0){
+    h+='<div class="card"><b style="color:var(--b);display:block;margin-bottom:8px">Historique ('+livrees.length+' livrees, '+annulees.length+' annulees)</b>';
+    lv.forEach(function(c){
+      var idx=LV.findIndex(function(l){return l.id===c.lid;});
+      var col=c.s==="Annulee"?"#9E9E9E":(c.lid?DC[idx<0?0:idx%DC.length]:"#9E9E9E");
+      h+='<div class="or" style="border-left:3px solid '+col+';margin-bottom:4px;'+(c.s==="Annulee"?'opacity:.6;background:#F5F5F5':'')+'">'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-weight:700;font-size:12px">'+c.cn+'</div>'
+        +'<div style="font-size:10px;color:var(--mut)">'+c.c+' &mdash; '+(c.dl||c.dc)+'</div>'
+        +'</div>'
+        +'<div style="text-align:center;min-width:40px"><div style="font-size:16px;font-weight:800;color:var(--gd)">'+(c.qr||c.q)+'</div><div style="font-size:9px;color:var(--mut)">bonb.</div></div>'
+        +(c.vi?'<span class="tag tag-pr">'+c.vi+' vides</span>':'')
+        +(c.bl?'<span class="tag" style="background:#FFE8F4;color:#E5007D">'+c.bl+'</span>':'')
+        +(c.obs?'<span class="tag" style="background:#FFF8E1;color:#F57F17">💬 '+c.obs+'</span>':'')
+        +'<span style="font-size:10px;color:'+col+';font-weight:700">'+lname(c.lid)+'</span>'
+        +'<button onclick="delCmd(this.dataset.id)" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;background:white;color:#C62828">🗑</button>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  return h;
+}
+
+// ═══ LIVREUR APP ═════════════════════════════════
+function rnLiv(){
+  var l=LV.find(function(x){return x.id===LIV_ID;})||LV[0];
+  var cs=livCmdsActive(l.id);
+  var lv=cs.filter(function(c){return c.s==="Livree";});
+  var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
+  var pct=cs.length?Math.round(lv.length/cs.length*100):0;
+  var idx=LV.findIndex(function(x){return x.id===LIV_ID;});
+  var col=DC[idx<0?0:idx%DC.length];
+  var cirs=getCircuits(l.id);
+  var top='<div class="top"><div class="logi"><img src="data:image/png;base64,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" alt="O"></div>'
+    +'<div class="brand"><b>ODEL</b><span style="color:#E5007D">YS</span><small>'+l.n+'</small></div>'
+    +'<div class="top-r"><span class="bge bgl">Livreur</span>'
+    +(FB_URL?'<span class="sdot s'+sstatus+'" id="sdot" data-a="syn" title="Actualiser"></span>':'')
+    +'</div></div>';
+  var hd='<div class="lv-hd" style="background:'+col+'">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +'<div><div style="font-size:18px;font-weight:800">'+l.n+'</div><div style="font-size:12px;opacity:.75">'+l.v+' &mdash; Capacite: '+l.cap+' bonb.</div></div>'
+    +'<div style="text-align:right"><div style="font-size:28px;font-weight:900">'+lv.length+'/'+cs.length+'</div><div style="font-size:10px;opacity:.7">livrees</div></div></div>'
+    +'<div style="height:5px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden;margin-bottom:10px"><div style="height:100%;background:#E5007D;border-radius:3px;width:'+pct+'%"></div></div>';
+  if(cirs.length>1){
+    hd+='<div style="font-size:11px;opacity:.8;margin-bottom:6px"><b>'+cirs.length+' circuits</b> (retour au depot entre chaque)</div>';
+    hd+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+    cirs.forEach(function(cir,ci){
+      hd+='<button data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'" style="flex:1;min-width:130px;padding:8px;background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.4);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🗺 Circuit '+(ci+1)+' ('+cir.reduce(function(s,c){return s+(+c.q||0);},0)+' bonb.)</button>';
+    });
+    hd+='</div>';
+  }else if(cirs.length===1){
+    hd+='<button data-a="cir" data-id="'+l.id+'" data-ci="0" style="width:100%;padding:9px;background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.4);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🗺 Ouvrir ma tournee optimisee dans Google Maps</button>';
+  }
+  hd+='</div>';
+  var stops="";var cq=0;
+  cs.forEach(function(c,j){
+    var pq=cq;cq+=(+c.q||0);
+    var nc=Math.floor(cq/l.cap),pc=Math.floor(pq/l.cap);
+    if(nc>pc&&j>0&&u>l.cap){
+      stops+='<div class="lv-rl" style="margin:8px 10px">⬅ Retour depot Odelys &mdash; Rechargement circuit '+(nc+1)+'</div>';
+    }
+    if(c.s==="Livree"){
+      stops+='<div class="lv-done"><svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#72B81E"/><path d="M7 12l3 3 7-7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        +'<span style="font-weight:700;flex:1">'+c.cn+' &mdash; '+(c.qr||c.q)+' bonb.</span>'
+        +(c.vi?'<span class="tag tag-pr">'+c.vi+' vides</span>':'')
+        +(c.bl?'<span class="tag" style="background:#FFE8F4;color:#E5007D">BL '+c.bl+'</span>':'')
+        +(c.obs?'<span class="tag" style="background:#FFF8E1;color:#F57F17">💬 '+c.obs+'</span>':'')
+        +'</div>';
+      return;
+    }
+    stops+='<div class="sc"><div class="sch" style="background:'+col+'18">'
+      +'<div class="snum" style="background:'+col+'">'+(j+1)+'</div>'
+      +'<div style="flex:1"><div style="font-weight:800;font-size:15px;color:var(--b)">'+c.cn+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+c.c+' &mdash; '+c.a.substring(0,42)+'</div>'
+      +(c.dc!==td()?'<div style="font-size:11px;color:#E53935;font-weight:700">⚠ Commande du '+c.dc+(c.dls?' &mdash; Prévue le '+c.dls:'')+'</div>':'')
+      +(c.dls?'<div style="font-size:11px;color:var(--b)">📅 '+c.dls+'</div>':'')
+      +'</div>'+stTag(c.s||"A programmer")+priTag(c.pri||"Normale")+'</div>'
+      +'<div class="scb">'
+      +'<div style="font-size:40px;font-weight:900;color:var(--gd);text-align:center;line-height:1">'+c.q+'</div>'
+      +'<div style="font-size:11px;color:var(--mut);text-align:center;margin-top:2px;font-weight:600;text-transform:uppercase">bonbonnes 19L commandees</div>'
+      +(c.rem?'<div style="background:#FFF8E1;border-radius:8px;padding:9px;font-size:13px;color:#854F0B;margin-top:9px">💬 '+c.rem+'</div>':'')
+      +(c.note?'<div style="background:#EDE7F6;border-radius:8px;padding:9px;font-size:13px;color:#4A148C;margin-top:6px">📌 '+c.note+'</div>':'')
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:11px">'
+      +'<div class="fbox"><label>Livrees</label><input type="number" data-a="sf" data-id="'+c.id+'" data-f="qr" value="'+(c.qr!=null?c.qr:c.q)+'" min="0" inputmode="numeric"></div>'
+      +'<div class="fbox"><label>Vides recup.</label><input type="number" data-a="sf" data-id="'+c.id+'" data-f="vi" value="'+(c.vi||"")+'" placeholder="0" min="0" inputmode="numeric"></div>'
+      +'<div class="fbox"><label>N Bon BL</label><input type="text" data-a="sf" data-id="'+c.id+'" data-f="bl" value="'+(c.bl||"")+'" placeholder="BL-..."></div>'
+      +'</div>'
+      +'<div class="fbox" style="margin-top:8px"><label>Observation livreur</label>'
+      +'<input type="text" data-a="sf" data-id="'+c.id+'" data-f="obs" value="'+(c.obs||"")+'" placeholder="Remarque, incident, client absent..."></div>'
+      +'<button data-a="nav" data-addr="'+c.a+' '+c.c+' '+c.w+' Algerie" style="width:100%;padding:11px;background:var(--bl);color:var(--b);border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px">📍 Naviguer vers ce client</button>'
+      +'<div style="display:flex;gap:7px;margin-top:7px">'
+      +'<button data-a="enc" data-id="'+c.id+'" style="flex:1;padding:10px;background:'+col+'22;color:'+col+';border:1px solid '+col+'44;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">En route</button>'
+      +'<button data-a="clf" data-id="'+c.id+'" style="flex:2;padding:11px;background:'+col+';color:white;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer">✓ Confirmer livraison</button>'
+      +'</div></div></div>';
+  });
+  if(!cs.length) stops='<div style="color:white;padding:2rem;text-align:center">'
+    +'<div style="font-size:48px;margin-bottom:1rem">📭</div>'
+    +'<div style="font-weight:700;font-size:16px">Aucune livraison affectee</div>'
+    +'<div style="font-size:12px;opacity:.75;margin-top:.5rem">Demandez a l\'admin d\'affecter vos livraisons</div>'
+    +(FB_URL?'<br><button data-a="syn" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;margin-top:.5rem">Actualiser</button>':'')
+    +'</div>';
+  return '<div class="app">'+top+'<div class="lv-wrap">'+hd+stops+'<div style="height:24px"></div></div></div>';
+}
+
+// ═══ MODALS ══════════════════════════════════════
+function openNewCmd(){
+  var today=tdiso();
+  var lo="<option value=''>Affecter plus tard...</option>";
+  LV.forEach(function(l){lo+="<option value='"+l.id+"'>"+l.n+" ("+l.v+") &mdash; "+(l.cap-capUsed(l.id))+" dispo</option>";});
+  var so=""; STATUTS.slice(0,-1).forEach(function(s,i){so+="<option"+(i===0?" selected":"")+">"+s+"</option>";});
+  var po=""; PRIORITES.forEach(function(p,i){po+="<option"+(i===0?" selected":"")+">"+p+"</option>";});
+  var html='<div class="mbar"></div><div class="mtl">Nouvelle commande</div>'
+    +'<div class="fg"><label>Client &mdash; tapez pour rechercher</label>'
+    +'<div class="acw"><input id="inc" placeholder="Nom ou commune..." autocomplete="off" oninput="filterCL(this.value)">'
+    +'<div class="acd" id="acd"></div></div><input type="hidden" id="cid"></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:9px">'
+    +'<div id="fw" style="flex:1;padding:8px;border:1px solid var(--bdr);border-radius:8px;background:var(--bl);font-size:12px;color:var(--b)">Wilaya</div>'
+    +'<div id="fc" style="flex:1;padding:8px;border:1px solid var(--bdr);border-radius:8px;background:var(--bl);font-size:12px;color:var(--b)">Commune</div>'
+    +'</div>'
+    +'<div class="frow"><div class="fg"><label>Date commande</label><input type="date" id="fdc" value="'+today+'"></div>'
+    +'<div class="fg"><label>Date livr. souhaitee</label><input type="date" id="fdls"></div></div>'
+    +'<div class="frow"><div class="fg"><label>Statut</label><select id="fst">'+so+'</select></div>'
+    +'<div class="fg"><label>Priorite</label><select id="fpri">'+po+'</select></div></div>'
+    +'<div class="fg"><label>Bonbonnes 19L</label><input type="number" id="iq" value="1" min="1" style="font-size:22px;font-weight:800;text-align:center"></div>'
+    +'<div class="fg"><label>Accessoires / commentaire</label><input id="irem" placeholder="ex: 2 portes gobelets..."></div>'
+    +'<div class="fg"><label>Note interne</label><textarea id="inote" rows="2" style="resize:none" placeholder="Note equipe..."></textarea></div>'
+    +'<div class="fg"><label>Livreur</label><select id="iliv">'+lo+'</select></div>'
+    +'<div style="display:flex;gap:8px;margin-top:4px">'
+    +'<button data-a="cov" style="flex:1;padding:10px;border:1px solid var(--bdr);background:white;border-radius:8px;cursor:pointer;font-weight:600">Annuler</button>'
+    +'<button data-a="sav" class="btn btnb" style="flex:2;padding:10px">Enregistrer</button></div>';
+  document.getElementById("mdc").innerHTML=html;
+  document.getElementById("ov").classList.add("show");
+  setTimeout(function(){document.getElementById("inc").focus();},100);
+}
+
+function filterCL(q){
+  var d=document.getElementById("acd");
+  if(!q){d.classList.remove("on");d.innerHTML="";return;}
+  var res=CL.filter(function(c){return c.n.toLowerCase().indexOf(q.toLowerCase())>=0||(c.c||"").toLowerCase().indexOf(q.toLowerCase())>=0;}).slice(0,10);
+  d.innerHTML="";
+  if(!res.length){d.innerHTML="<div class='aci' style='color:var(--mut)'>Aucun resultat</div>";d.classList.add("on");return;}
+  res.forEach(function(c){
+    var el=document.createElement("div");el.className="aci";
+    el.innerHTML="<b>"+c.n+"</b><small>"+c.w+" &mdash; "+c.c+"</small>";
+    el.onclick=function(){
+      document.getElementById("inc").value=c.n;
+      document.getElementById("cid").value=c.id;
+      document.getElementById("fw").textContent=c.w;
+      document.getElementById("fc").textContent=c.c;
+      d.classList.remove("on");d.innerHTML="";
+    };
+    d.appendChild(el);
+  });
+  d.classList.add("on");
+}
+
+function saveCmd(){
+  var cid=document.getElementById("cid").value;
+  var q=parseInt(document.getElementById("iq").value)||0;
+  if(!cid||!q){alert("Selectionnez un client et saisissez la quantite");return;}
+  var c=CL.find(function(x){return x.id===cid;});
+  var dc=document.getElementById("fdc").value;
+  var dcFr=dc?(function(d){return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();})(new Date(dc+"T12:00:00")):td();
+  var dlsEl=document.getElementById("fdls");
+  var dls=dlsEl&&dlsEl.value?(function(d){return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();})(new Date(dlsEl.value+"T12:00:00")):"";
+  CMDS.push({id:nid(),dc:dcFr,dls:dls,dl:"",cl:cid,cn:c.n,c:c.c,w:c.w,a:c.a,
+    q:q,qr:null,vi:"",rem:document.getElementById("irem").value,
+    note:document.getElementById("inote").value,
+    lid:document.getElementById("iliv").value,
+    s:document.getElementById("fst").value,
+    pri:document.getElementById("fpri").value,bl:""});
+  closeOv();fbSave(render);gasSync("newCmd",CMDS[CMDS.length-1]);
+}
+
+function editCmd(id){
+  var c=CMDS.find(function(x){return x.id===id;});if(!c)return;
+  var so=""; STATUTS.forEach(function(s){so+="<option"+(s===c.s?" selected":"")+">"+s+"</option>";});
+  var po=""; PRIORITES.forEach(function(p){po+="<option"+(p===(c.pri||"Normale")?" selected":"")+">"+p+"</option>";});
+  var lo="<option value=''>Non affecte</option>"; LV.forEach(function(l){lo+="<option value='"+l.id+"'"+(l.id===c.lid?" selected":"")+">"+l.n+"</option>";});
+  var dlsVal="";try{if(c.dls)dlsVal=new Date(c.dls.split("/").reverse().join("-")).toISOString().split("T")[0];}catch(e){}
+  var html='<div class="mbar"></div><div class="mtl">'+c.id+' &mdash; '+c.cn+'</div>'
+    +'<div style="padding:8px 11px;background:var(--bl);border-radius:8px;margin-bottom:12px;font-size:12px;color:var(--b)">'+(c.c||"")+(c.w?' &mdash; '+c.w:'')+'</div>'
+    +'<div class="fg"><label>Date livr. souhaitee</label><input type="date" id="edls" value="'+dlsVal+'"></div>'
+    +'<div class="frow"><div class="fg"><label>Statut</label><select id="est">'+so+'</select></div>'
+    +'<div class="fg"><label>Priorite</label><select id="epri">'+po+'</select></div></div>'
+    +'<div class="fg"><label>Bonbonnes 19L</label><input type="number" id="eq" value="'+c.q+'" style="font-size:22px;font-weight:800;text-align:center"></div>'
+    +'<div class="fg"><label>Accessoires</label><input id="er" value="'+(c.rem||"")+'"></div>'
+    +'<div class="fg"><label>Note interne</label><textarea id="en" rows="2" style="resize:none">'+(c.note||"",c.obs||"")+'</textarea></div>'
+    +'<div class="fg"><label>Livreur</label><select id="el">'+lo+'</select></div>'
+    +'<div style="display:flex;gap:8px;margin-top:4px">'
+    +'<button data-a="cov" style="flex:1;padding:10px;border:1px solid var(--bdr);background:white;border-radius:8px;cursor:pointer;font-weight:600">Fermer</button>'
+    +'<button data-a="sed" data-eid="'+c.id+'" class="btn btnb" style="flex:2;padding:10px">Enregistrer</button></div>';
+  document.getElementById("mdc").innerHTML=html;
+  document.getElementById("ov").classList.add("show");
+}
+
+function saveEdit(id){
+  var c=CMDS.find(function(x){return x.id===id;});if(!c)return;
+  c.q=parseInt(document.getElementById("eq").value)||c.q;
+  c.rem=document.getElementById("er").value;
+  c.note=document.getElementById("en").value;
+  c.lid=document.getElementById("el").value;
+  c.s=document.getElementById("est").value;
+  c.pri=document.getElementById("epri").value;
+  var dlsEl=document.getElementById("edls");
+  if(dlsEl&&dlsEl.value){var _d=new Date(dlsEl.value+"T12:00:00");c.dls=String(_d.getDate()).padStart(2,"0")+"/"+String(_d.getMonth()+1).padStart(2,"0")+"/"+_d.getFullYear();}
+  closeOv();fbSave(render);
+}
+
+function openClientForm(eid){
+  var e=eid?CL.find(function(c){return c.id===eid;}):null;
+  var html='<div class="mbar"></div><div class="mtl">'+(e?"Modifier client":"Nouveau client")+'</div>'
+    +'<div class="fg"><label>Nom / Raison sociale</label><input id="cn" value="'+(e?e.n:"")+'" placeholder="Nom..."></div>'
+    +'<div class="frow"><div class="fg"><label>Tel.</label><input id="cp" value="'+(e?e.p||"":"")+'" inputmode="tel" placeholder="0551..."></div>'
+    +'<div class="fg"><label>Wilaya</label><input id="cw" value="'+(e?e.w||"":"")+'" placeholder="Alger..."></div></div>'
+    +'<div class="fg"><label>Commune</label><input id="cc" value="'+(e?e.c||"":"")+'" placeholder="Hydra..."></div>'
+    +'<div class="fg"><label>Adresse</label><input id="ca" value="'+(e?e.a||"":"")+'" placeholder="Rue, cite..."></div>'
+    +'<div style="display:flex;gap:8px;margin-top:4px">'
+    +'<button data-a="cov" style="flex:1;padding:10px;border:1px solid var(--bdr);background:white;border-radius:8px;cursor:pointer;font-weight:600">Annuler</button>'
+    +'<button data-a="scl" data-eid="'+(eid||"")+'" class="btn btnb" style="flex:2;padding:10px">Enregistrer</button></div>';
+  document.getElementById("mdc").innerHTML=html;
+  document.getElementById("ov").classList.add("show");
+}
+
+function saveCL(eid){
+  var n=document.getElementById("cn").value.trim();if(!n){alert("Nom obligatoire");return;}
+  if(eid){var cl=CL.find(function(x){return x.id===eid;});if(cl){cl.n=n;cl.p=document.getElementById("cp").value;cl.w=document.getElementById("cw").value;cl.c=document.getElementById("cc").value;cl.a=document.getElementById("ca").value;}}
+  else CL.push({id:"CLI-"+(CL.length+1).toString().padStart(4,"0"),n:n,p:document.getElementById("cp").value,w:document.getElementById("cw").value,c:document.getElementById("cc").value,a:document.getElementById("ca").value});
+  closeOv();fbSave(render);
+}
+function delClient(id){if(confirm("Supprimer ce client ?"))CL=CL.filter(function(c){return c.id!==id;});fbSave(render);}
+
+// ═══ GESTION LIVREURS ════════════════════════════
+function openLivForm(eid){
+  var e=eid?LV.find(function(l){return l.id===eid;}):null;
+  var html='<div class="mbar"></div><div class="mtl">'+(e?"Modifier livreur":"Nouveau livreur")+'</div>'
+    +'<div class="fg"><label>Nom</label><input id="ln" value="'+(e?e.n:"")+'" placeholder="PRENOM NOM..."></div>'
+    +'<div class="frow"><div class="fg"><label>Vehicule</label><input id="lv2" value="'+(e?e.v||"":"")+'" placeholder="Fourgon, Camion..."></div>'
+    +'<div class="fg"><label>Capacite (bonb.)</label><input id="lc" type="number" value="'+(e?e.cap:100)+'" min="1" style="font-size:22px;font-weight:800;text-align:center"></div></div>'
+    +'<div class="frow"><div class="fg"><label>Tel.</label><input id="lt" value="'+(e?e.tel||"":"")+'" inputmode="tel" placeholder="0551..."></div>'
+    +'<div class="fg"><label>Zone / secteur</label><input id="lz" value="'+(e?e.zone||"":"")+'" placeholder="ex: Alger Ouest..."></div></div>'
+    +'<div style="display:flex;gap:8px;margin-top:4px">'
+    +'<button data-a="cov" style="flex:1;padding:10px;border:1px solid var(--bdr);background:white;border-radius:8px;cursor:pointer;font-weight:600">Annuler</button>'
+    +'<button data-a="slv" data-eid="'+(eid||"")+'" class="btn btnb" style="flex:2;padding:10px">Enregistrer</button></div>';
+  document.getElementById("mdc").innerHTML=html;
+  document.getElementById("ov").classList.add("show");
+}
+function saveLiv(eid){
+  var n=document.getElementById("ln").value.trim().toUpperCase();if(!n){alert("Nom obligatoire");return;}
+  var cap=parseInt(document.getElementById("lc").value)||100;
+  if(eid){var l=LV.find(function(x){return x.id===eid;});if(l){l.n=n;l.v=document.getElementById("lv2").value;l.cap=cap;l.tel=document.getElementById("lt").value;l.zone=document.getElementById("lz").value;}}
+  else{
+    var newId="L"+(LV.length+1);
+    LV.push({id:newId,n:n,v:document.getElementById("lv2").value,cap:cap,tel:document.getElementById("lt").value,zone:document.getElementById("lz").value});
+  }
+  closeOv();fbSave(render);
+}
+function delLiv(id){
+  if(!confirm("Supprimer ce livreur ?"))return;
+  LV=LV.filter(function(l){return l.id!==id;});
+  CMDS.forEach(function(c){if(c.lid===id){c.lid="";c.s="A programmer";}});
+  fbSave(render);
+}
+
+// ═══ ACTIONS ═════════════════════════════════════
+function aff(cid,lid){var c=CMDS.find(function(x){return x.id===cid;});if(c&&lid){c.lid=lid;if(c.s==="A programmer")c.s="Programmee";}}
+function unaff(id){var c=CMDS.find(function(x){return x.id===id;});if(c){c.lid="";c.s="A programmer";}sv();}
+function setF(id,f,v){var c=CMDS.find(function(x){return x.id===id;});if(c)c[f]=v;fbSave(null);}
+function setS(id,s){var c=CMDS.find(function(x){return x.id===id;});if(c)c.s=s;}
+function confirmLiv(id){
+  var c=CMDS.find(function(x){return x.id===id;});if(!c)return;
+  if(!c.bl){alert("Saisissez le numero du bon BL avant de confirmer");return;}
+  c.s="Livree";c.dl=td();if(c.qr==null)c.qr=c.q;
+  gasSync("confirmLiv",c);fbSave(render);
+}
+function navTo(a){window.open("https://www.google.com/maps/dir/"+encodeURIComponent(DEPOT_ADDR)+"/"+encodeURIComponent(a),"_blank");}
+function optMyRoute(){var cirs=getCircuits(LIV_ID);if(cirs.length)openMaps(cirs[0]);else alert("Aucune livraison");}
+function copyLink(url){
+  if(navigator.clipboard)navigator.clipboard.writeText(url).then(function(){alert("Lien copie !");});
+  else{var t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);alert("Lien copie !");}
+}
+
+
+// ═══ COMMUNE COORDINATES ════════════════════════
+var COMMUNE_COORDS = {
+  // Alger communes
+  "Hydra":[36.7417,3.0388],"Cheraga":[36.7667,2.9833],"Bab Ezzouar":[36.7239,3.1903],
+  "Ben Aknoun":[36.7608,3.0022],"Dely Ibrahim":[36.7444,3.0025],"El Biar":[36.7725,3.0375],
+  "Kouba":[36.7167,3.1667],"Bir Mourad Rais":[36.7333,3.0667],"Mohammadia":[36.745,3.15],
+  "Hussein Dey":[36.72,3.11],"Rouiba":[36.735,3.305],"Reghaia":[36.7167,3.3833],
+  "Ouled Fayet":[36.7167,2.95],"Zeralda":[36.7333,2.8833],"Dar El Beida":[36.71,3.21],
+  "Oued Smar":[36.7083,3.2167],"Birkhadem":[36.7167,3.05],"El Harrach":[36.7,3.1333],
+  "Baraki":[36.6667,3.1],"El Mouradia":[36.75,3.05],"Alger Centre":[36.7372,3.0869],
+  "Bir Touta":[36.6833,3.1167],"El Achour":[36.7308,2.9817],"Baba Hassen":[36.7167,2.9667],
+  "Draria":[36.7083,3.0],"Ain Benian":[36.8,2.9167],"Staoueli":[36.7617,2.8817],
+  "Les Eucalyptus":[36.6833,3.1333],"Tessala El Merdja":[36.6333,2.95],
+  "Rahmania":[36.7167,2.8833],"Maalma":[36.7333,2.9167],"Bordj El Kiffan":[36.745,3.185],
+  "Bab El Oued":[36.785,3.055],"El Madania":[36.745,3.065],"Saoula":[36.695,3.035],
+  // Blida
+  "Blida":[36.4722,2.8294],"Beni Mered":[36.5167,2.8167],"Boufarik":[36.5667,2.9333],
+  "Ouled Yaich":[36.5167,2.85],"Meftah":[36.6167,3.2167],"Larbaa":[36.5667,3.1667],
+  "Bouinan":[36.5,2.8333],"Beni-Tamou":[36.5333,2.8833],
+  // Boumerdes
+  "Boumerdes":[36.7367,3.4775],"Boudouaou":[36.7333,3.4167],"Larbatache":[36.7167,3.5],
+  // Tipaza
+  "Tipaza":[36.5894,2.4494],"Kolea":[36.6378,2.7628],
+  // Oran
+  "Oran":[35.6969,-0.6331],"Bir El Djir":[35.7333,-0.5833],"Hassi Bounif":[35.7667,-0.55],
+  "Es Senia":[35.6333,-0.6167],"Oued Tlelat":[35.5667,-0.4667],
+  // Constantine
+  "Constantine":[36.365,6.6147],
+  // Annaba
+  "El Bouni":[36.9167,7.75],
+  // Ain Defla
+  "Miliana":[36.3017,2.235],"Ain Defla":[36.2656,1.9697],
+  // Others
+  "Skikda":[36.876,6.9069],"Relizane":[35.7372,0.5561],
+  "Sidi Bel-Abbes":[35.1897,-0.6314],"Sidi Khettab":[35.85,0.85]
+};
+
+function getCoords(c){
+  if(!c)return null;
+  // Try exact commune match
+  if(COMMUNE_COORDS[c.c])return COMMUNE_COORDS[c.c];
+  // Try wilaya capital
+  if(COMMUNE_COORDS[c.w])return COMMUNE_COORDS[c.w];
+  return null;
+}
+
+// ═══ CARTE ═══════════════════════════════════════
+var mapObj=null;
+function pgMAP(){
+  var tc=CMDS.filter(function(c){return c.dc===td()&&c.s!=="Annulee"&&c.s!=="Livree";});
+  var total=tc.length;
+  var h='<div class="shd"><b style="color:var(--b)">Carte des livraisons du jour ('+total+')</b></div>';
+  if(!total){return h+'<div class="em">Aucune commande active aujourd\'hui</div>';}
+  // Legend
+  h+='<div class="map-legend">';
+  LV.forEach(function(l,i){
+    var cs=tc.filter(function(c){return c.lid===l.id;});
+    if(!cs.length)return;
+    h+='<div class="leg-item"><div class="leg-dot" style="background:'+DC[i%DC.length]+'"></div>'+l.n+' ('+cs.length+')</div>';
+  });
+  var unassigned=tc.filter(function(c){return !c.lid;});
+  if(unassigned.length) h+='<div class="leg-item"><div class="leg-dot" style="background:#9E9E9E"></div>Non affectees ('+unassigned.length+')</div>';
+  h+='</div>';
+  h+='<div class="map-container" id="mapDiv"></div>';
+  h+='<div style="font-size:11px;color:var(--mut);margin-top:.5rem;text-align:center">Positions approximatives par commune. Cliquez sur un marqueur pour les details.</div>';
+  // Initialize map after DOM render
+  setTimeout(function(){initMap(tc);},100);
+  return h;
+}
+
+function initMap(cmds){
+  var div=document.getElementById("mapDiv");
+  if(!div||typeof google==="undefined")return;
+  var depotLatLng={lat:36.685984,lng:2.89};
+  var map=new google.maps.Map(div,{
+    center:depotLatLng,zoom:11,
+    mapTypeControl:false,streetViewControl:false,fullscreenControl:true
+  });
+  mapObj=map;
+  // Depot marker
+  new google.maps.Marker({
+    position:depotLatLng,map:map,
+    icon:{path:google.maps.SymbolPath.CIRCLE,scale:10,fillColor:"#1A1A3E",fillOpacity:1,strokeColor:"white",strokeWeight:2},
+    title:"Depot ODELYS",
+    label:{text:"D",color:"white",fontSize:"10px",fontWeight:"800"}
+  }).addInfoWindow=function(){};
+  var infoW=new google.maps.InfoWindow();
+  var bounds=new google.maps.LatLngBounds();
+  bounds.extend(depotLatLng);
+  cmds.forEach(function(c){
+    var coords=getCoords(c);
+    if(!coords)return;
+    var idx=LV.findIndex(function(l){return l.id===c.lid;});
+    var col=c.lid?DC[idx<0?0:idx%DC.length]:"#9E9E9E";
+    var lname2=c.lid?lname(c.lid):"Non affecte";
+    var pos={lat:coords[0],lng:coords[1]};
+    var marker=new google.maps.Marker({
+      position:pos,map:map,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:14,fillColor:col,fillOpacity:1,strokeColor:"white",strokeWeight:2},
+      label:{text:String(c.q),color:"white",fontSize:"10px",fontWeight:"800"},
+      title:c.cn
+    });
+    marker.addListener("click",function(){
+      infoW.setContent('<div style="font-size:13px;min-width:180px"><b>'+c.cn+'</b><br><span style="color:#7070A0">'+c.c+'</span><br><b style="color:#4A8010">'+c.q+'</b> bonbonnes<br><span style="color:'+col+'">'+lname2+'</span><br>'+stTag(c.s||"A programmer")+'</div>');
+      infoW.open(map,marker);
+    });
+    bounds.extend(pos);
+  });
+  map.fitBounds(bounds,{top:40,bottom:40,left:40,right:40});
+}
+
+// ═══ GOOGLE SHEETS SYNC ══════════════════════════════════════════
+function gasSync(action, data){
+  if(!GAS_URL)return;
+  fetch(GAS_URL,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain"},
+    body:JSON.stringify({action:action,data:data})
+  }).catch(function(){});// silent fail - sheets is backup only
+}
+function gasExportAll(){
+  if(!GAS_URL){alert("Google Sheets non configure. Utilisez le bouton CSV pour exporter.");return;}
+  gasSync("syncAll",{cmds:CMDS});
+  alert("Synchronisation vers Google Sheets lancee !");
+}
+
+// ═══ EXPORT CSV ══════════════════════════════════════════════════
+function exportCSV(){
+  if(typeof XLSX==="undefined"){
+    var s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload=function(){_doExport();};
+    document.head.appendChild(s);
+  } else { _doExport(); }
+}
+function _doExport(){
+  var date=new Date().toLocaleDateString("fr-FR").replace(/\//g,"-");
+  var rows=[["N Commande","Date Commande","Date Livr. Prevue","Date Livr. Reelle",
+    "Client","Wilaya","Commune","Adresse",
+    "Bonb. Commandees","Bonb. Livrees","Vides Recuperes","N Bon BL",
+    "Livreur","Statut","Priorite","Accessoires","Note","Observation Livreur"]];
+  CMDS.forEach(function(c){
+    rows.push([
+      c.id||"",c.dc||"",c.dls||"",c.dl||"",
+      c.cn||"",c.w||"",c.c||"",c.a||"",
+      Number(c.q)||0,
+      c.qr!==null&&c.qr!==""?Number(c.qr):Number(c.q)||0,
+      Number(c.vi)||0,c.bl||"",
+      c.lid?lname(c.lid):"",
+      c.s||"",c.pri||"Normale",c.rem||"",c.note||"",c.obs||""
+    ]);
+  });
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[
+    {wch:12},{wch:12},{wch:14},{wch:14},
+    {wch:35},{wch:12},{wch:14},{wch:42},
+    {wch:10},{wch:10},{wch:10},{wch:12},
+    {wch:14},{wch:12},{wch:10},{wch:20},{wch:25},{wch:25}
+  ];
+  // Style header row
+  var range=XLSX.utils.decode_range(ws["!ref"]);
+  for(var col=range.s.c;col<=range.e.c;col++){
+    var cell=XLSX.utils.encode_cell({r:0,c:col});
+    if(ws[cell]){
+      ws[cell].s={font:{bold:true,color:{rgb:"FFFFFF"}},fill:{fgColor:{rgb:"3D3DB5"}}};
+    }
+  }
+  XLSX.utils.book_append_sheet(wb,"COMMANDES",ws);
+  XLSX.writeFile(wb,"ODELYS_Commandes_"+date+".xlsx");
+}
+
+function openGasConfig(){
+  var html='<div class="mbar"></div><div class="mtl">Google Sheets — Historique</div>'
+    +'<div class="al al-i" style="font-size:12px"><b>Pour enregistrer tout lhistorique dans Google Sheets :</b><br><br>'
+    +'1. Allez sur <b>sheet.new</b> (nouveau Google Sheet)<br>'
+    +'2. Nommez-le <b>ODELYS Historique</b><br>'
+    +'3. Menu Extensions &rarr; <b>Apps Script</b><br>'
+    +'4. Collez le fichier <b>ODELYS_Apps_Script.js</b> fourni<br>'
+    +'5. Deployer &rarr; Nouvelle déploiement &rarr; Application Web<br>'
+    +'&nbsp;&nbsp;&nbsp;• Exécuter en tant que : <b>Moi</b><br>'
+    +'&nbsp;&nbsp;&nbsp;• Qui a accès : <b>Tout le monde</b><br>'
+    +'6. Copiez lURL et collez ci-dessous</div>'
+    +'<div class="fg" style="margin-top:1rem"><label>URL Apps Script</label>'
+    +'<input id="gasurl" value="'+GAS_URL+'" placeholder="https://script.google.com/macros/s/..." style="font-size:12px"></div>'
+    +'<div style="display:flex;gap:8px;margin-top:4px">'
+    +'<button data-a="cov" style="flex:1;padding:10px;border:1px solid var(--bdr);background:white;border-radius:8px;cursor:pointer;font-weight:600">Annuler</button>'
+    +'<button onclick="saveGasConfig()" class="btn" style="flex:2;padding:10px;background:#0F9D58;color:white;border-color:#0F9D58">Enregistrer</button>'
+    +'</div>';
+  document.getElementById("mdc").innerHTML=html;
+  document.getElementById("ov").classList.add("show");
+}
+function saveGasConfig(){
+  GAS_URL=(document.getElementById("gasurl").value||"").trim();
+  sv();closeOv();
+  if(GAS_URL){
+    // Test connection + sync all
+    fetch(GAS_URL+"?action=ping")
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status==="ok"){
+          gasSync("syncAll",{cmds:CMDS});
+          alert("Google Sheets connecte ! Synchronisation de "+CMDS.length+" commandes en cours...");
+        }
+      })
+      .catch(function(){alert("Connexion impossible. Verifiez lURL et les droits dacces.");});
+  }
+}
+
+function renderLoading(){
+  var root=document.getElementById("root");
+  var msg=MODE==="livreur"?"Chargement de vos livraisons...":"Synchronisation en cours...";
+  root.innerHTML='<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#2B2B8A,#3D3DB5);gap:1.5rem;padding:2rem">'
+    +'<img src="data:image/png;base64,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" style="width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,.3)">'
+    +'<div style="color:white;font-size:16px;font-weight:700;letter-spacing:1px">ODELYS Livraisons</div>'
+    +'<div style="display:flex;flex-direction:column;align-items:center;gap:12px">'
+    +'<div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:#E5007D;border-radius:50%;animation:spin 1s linear infinite"></div>'
+    +'<div style="color:rgba(255,255,255,.8);font-size:13px">'+msg+'</div>'
+    +'</div>'
+    +'<style>@keyframes spin{to{transform:rotate(360deg)}}</style>'
+    +'</div>';
+}
+
+function moveCmd(cid,lid,dir){
+  var cs=livCmds(lid);
+  var idx=cs.findIndex(function(x){return x.id===cid;});
+  if(idx<0)return;
+  var newIdx=idx+dir;
+  if(newIdx<0||newIdx>=cs.length)return;
+  // Assign order numbers
+  cs.forEach(function(c,i){c.ord=i;});
+  // Swap
+  var tmp=cs[idx].ord;
+  cs[idx].ord=cs[newIdx].ord;
+  cs[newIdx].ord=tmp;
+}
+
+function pgPLAN(){
+  var today=td();
+  // All commands planned for today (dls=today OR dc=today and no dls) that are not cancelled
+  var tc=CMDS.filter(function(c){
+    if(c.s==="Annulee")return false;
+    var dlsD=c.dls?parseDate(c.dls):null;
+    var dcD=parseDate(c.dc);
+    var todayD=parseDate(today);
+    if(dlsD) return dlsD.getTime()===todayD.getTime();
+    return dcD&&dcD.getTime()===todayD.getTime();
+  });
+
+  var livrees=tc.filter(function(c){return c.s==="Livree";});
+  var nonLivrees=tc.filter(function(c){return c.s!=="Livree";});
+  var totalCmd=tc.reduce(function(s,c){return s+(+c.q||0);},0);
+  var totalLiv=livrees.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+  var totalNonLiv=nonLivrees.reduce(function(s,c){return s+(+c.q||0);},0);
+  var totalVides=tc.reduce(function(s,c){return s+(+c.vi||0);},0);
+  var pct=tc.length?Math.round(livrees.length/tc.length*100):0;
+
+  var h='<div class="shd"><b style="color:var(--b)">Planning du '+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</b></div>';
+
+  if(!tc.length){
+    return h+'<div class="em">Aucune commande planifiee pour aujourd\'hui</div>';
+  }
+
+  // ── Barre de progression ─────────────────────────
+  h+='<div class="card" style="margin-bottom:.75rem">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +'<span style="font-weight:700;color:var(--b)">Avancement du jour</span>'
+    +'<span style="font-size:18px;font-weight:900;color:'+(pct===100?'var(--gd)':'var(--b)')+'">'+pct+'%</span>'
+    +'</div>'
+    +'<div style="height:10px;background:var(--gray);border-radius:5px;overflow:hidden;margin-bottom:12px">'
+    +'<div style="height:100%;background:linear-gradient(90deg,#72B81E,#3D3DB5);width:'+pct+'%;border-radius:5px;transition:width .5s"></div>'
+    +'</div>'
+    // Stats grid
+    +'<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'
+    +'<div style="background:var(--bl);border-radius:10px;padding:10px 12px">'
+    +'<div style="font-size:11px;color:var(--mut)">Bonb. commandées</div>'
+    +'<div style="font-size:28px;font-weight:900;color:var(--b)">'+totalCmd+'</div>'
+    +'<div style="font-size:10px;color:var(--mut)">'+tc.length+' clients</div>'
+    +'</div>'
+    +'<div style="background:var(--gl);border-radius:10px;padding:10px 12px">'
+    +'<div style="font-size:11px;color:var(--mut)">Bonb. livrées</div>'
+    +'<div style="font-size:28px;font-weight:900;color:var(--gd)">'+totalLiv+'</div>'
+    +'<div style="font-size:10px;color:var(--mut)">'+livrees.length+' clients</div>'
+    +'</div>'
+    +'<div style="background:#FFEBEE;border-radius:10px;padding:10px 12px">'
+    +'<div style="font-size:11px;color:var(--mut)">Bonb. restantes</div>'
+    +'<div style="font-size:28px;font-weight:900;color:#C62828">'+totalNonLiv+'</div>'
+    +'<div style="font-size:10px;color:#C62828">'+nonLivrees.length+' clients en attente</div>'
+    +'</div>'
+    +'<div style="background:#FFF8E1;border-radius:10px;padding:10px 12px">'
+    +'<div style="font-size:11px;color:var(--mut)">Vides récupérés</div>'
+    +'<div style="font-size:28px;font-weight:900;color:#854F0B">'+totalVides+'</div>'
+    +'<div style="font-size:10px;color:var(--mut)">bonbonnes vides</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+
+  // ── Par livreur ──────────────────────────────────
+  h+='<div class="card"><b style="color:var(--b);display:block;margin-bottom:10px">Par livreur</b>';
+  LV.forEach(function(l,i){
+    var lcs=tc.filter(function(c){return c.lid===l.id;});
+    if(!lcs.length)return;
+    var llv=lcs.filter(function(c){return c.s==="Livree";});
+    var lq=lcs.reduce(function(s,c){return s+(+c.q||0);},0);
+    var lqLiv=llv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+    var lpct=lcs.length?Math.round(llv.length/lcs.length*100):0;
+    var col=DC[i%DC.length];
+    h+='<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bdr)">'
+      +'<div style="width:32px;height:32px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:white;flex-shrink:0">'+ini(l.n)+'</div>'
+      +'<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+'</div>'
+      +'<div style="height:4px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden">'
+      +'<div style="height:100%;background:'+col+';width:'+lpct+'%"></div></div></div>'
+      +'<div style="text-align:right;font-size:12px">'
+      +'<b style="color:var(--gd)">'+lqLiv+'</b><span style="color:var(--mut)">/'+lq+' bonb.</span><br>'
+      +'<span style="color:var(--mut);font-size:10px">'+llv.length+'/'+lcs.length+' clients</span>'
+      +'</div></div>';
+  });
+  h+='</div>';
+
+  // ── Clients non encore livrés ────────────────────
+  if(nonLivrees.length){
+    h+='<div class="card"><b style="color:#C62828;display:block;margin-bottom:10px">Clients non encore livrés ('+nonLivrees.length+')</b>';
+    nonLivrees.sort(function(a,b){
+      var po={"Critique":0,"Importante":1,"Normale":2};
+      return (po[a.pri||"Normale"]||0)-(po[b.pri||"Normale"]||0);
+    });
+    nonLivrees.forEach(function(c){
+      var col=c.lid?lcolor(c.lid):"#9E9E9E";
+      h+='<div class="or" style="margin-bottom:4px;border-left:3px solid '+col+'">'
+        +'<div style="flex:1"><div style="font-weight:700;font-size:12px">'+c.cn+'</div>'
+        +'<div style="font-size:10px;color:var(--mut)">'+c.c+' &mdash; '+c.w+'</div></div>'
+        +'<b style="color:var(--gd)">'+c.q+'</b>'
+        +priTag(c.pri||"Normale")
+        +stTag(c.s||"A programmer")
+        +'<span style="font-size:11px;font-weight:700;color:'+col+'">'+(c.lid?lname(c.lid):'<span style="color:#E53935">Non affecté</span>')+'</span>'
+        +'</div>';
+    });
+    h+='</div>';
+  } else {
+    h+='<div class="al al-ok">🎉 Toutes les livraisons du jour sont terminées !</div>';
+  }
+  return h;
+}
+
+
+function delCmd(id){
+  if(!confirm("Supprimer cette commande ?"))return;
+  CMDS=CMDS.filter(function(c){return c.id!==id;});
+  fbSave(render);
+}
+function clearAll(){
+  if(!confirm("Effacer TOUTES les commandes ?\n\nCette action est irréversible."))return;
+  if(!confirm("Confirmer : supprimer tout l'historique ?"))return;
+  CMDS=[];N=1000;
+  fbSave(render);
+  alert("Toutes les commandes ont été supprimées.");
+}
+
+// ═══ INIT ════════════════════════════════════════
+ld();detectMode();
+if(FB_URL){
+  // Show loading screen immediately
+  renderLoading();
+  // Then load Firebase
+  fbLoad(function(){render();startSync();});
+} else {
+  render();
+}
+</script>
+</body>
+</html>
