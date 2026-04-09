@@ -408,12 +408,31 @@ function normDate(s){
   if(p.length!==3)return s;
   return p[0].padStart(2,"0")+"/"+p[1].padStart(2,"0")+"/"+p[2];
 }
+function normStatut(s){
+  if(!s)return "A programmer";
+  var map={
+    "Livré":"Livree","Livre":"Livree","livree":"Livree","livré":"Livree","LIVREE":"Livree","LIVRÉ":"Livree",
+    "Annulé":"Annulee","Annule":"Annulee","annulee":"Annulee","ANNULEE":"Annulee","Annulée":"Annulee",
+    "En attente":"A programmer","en attente":"A programmer",
+    "Programmée":"Programmee","Programmé":"Programmee","programmee":"Programmee",
+    "En cours":"En cours","en cours":"En cours",
+    "Retardée":"Retardee","retardee":"Retardee"
+  };
+  return map[s]||s;
+}
 function normCmds(cmds){
   if(!cmds)return cmds;
   return cmds.map(function(c){
     c.dc=normDate(c.dc);
     c.dls=normDate(c.dls);
     c.dl=normDate(c.dl);
+    c.s=normStatut(c.s);
+    // Auto-critique si date de livraison dépassée et non livrée
+    if(c.dls&&c.s!=="Livree"&&c.s!=="Annulee"){
+      var dlsD=parseDate(c.dls);
+      var todayD=parseDate(td());
+      if(dlsD&&dlsD<todayD) c.pri="Critique";
+    }
     return c;
   });
 }
@@ -504,71 +523,32 @@ function parseDate(s){
   return new Date(p[2]+"-"+p[1].padStart(2,"0")+"-"+p[0].padStart(2,"0")+"T12:00:00");
 }
 function livCmds(lid){
-  var today=parseDate(td());
+  // Dashboard: all assigned (green=livré, orange=attente, red=annulé)
   return CMDS.filter(function(c){
-    if(c.lid!==lid||c.s==="Annulee"||c.s==="Livree")return false;
-    // If has a planned delivery date (dls), show only if dls <= today
-    if(c.dls){
-      var dls=parseDate(c.dls);
-      if(dls&&dls>today)return false; // not yet due
-    }
-    return true; // show: no date set, or date is today/past
+    if(c.lid!==lid)return false;
+    if(c.s==="Livree"||c.s==="Annulee")return true;
+    var today=parseDate(td());
+    if(c.dls){var dls=parseDate(c.dls);if(dls&&dls>today)return false;}
+    return true;
   }).sort(function(a,b){
-    // Sort by manual order if set, else by creation date
     if(a.ord!==undefined&&b.ord!==undefined)return a.ord-b.ord;
     var da=parseDate(a.dls||a.dc),db=parseDate(b.dls||b.dc);
     if(da&&db)return da-db;
     return 0;
   });
 }
-function closeOv(){document.getElementById("ov").classList.remove("show");document.getElementById("mdc").innerHTML="";}
-function stTag(s){
-  var m={"A programmer":"tag tag-ap","Programmee":"tag tag-pr","En cours":"tag tag-ec","Retardee":"tag tag-re","Annulee":"tag tag-an","Livree":"tag tag-lv"};
-  return '<span class="'+(m[s]||"tag tag-ap")+'">'+s+'</span>';
-}
-function priTag(p){
-  var m={"Normale":"tag pri-n","Importante":"tag pri-i","Critique":"tag pri-c"};
-  return '<span class="'+(m[p]||"tag pri-n")+'">'+(p==="Importante"?"⚠ ":p==="Critique"?"🔴 ":"")+p+'</span>';
-}
-function getCircuits(lid){
-  var l=LV.find(function(x){return x.id===lid;});if(!l)return[];
-  var cs=livCmds(lid).filter(function(c){return c.s!=="Livree"&&c.s!=="Annulee";});
-  if(!cs.length)return[];
-  var cirs=[],cur=[],load=0;
-  cs.forEach(function(c){
-    if(load+(+c.q||0)>l.cap&&cur.length){cirs.push(cur);cur=[];load=0;}
-    cur.push(c);load+=(+c.q||0);
+function livCmdsActive(lid){
+  var t=td();
+  return CMDS.filter(function(c){
+    if(c.lid!==lid||c.s==="Annulee"||c.s==="Livree")return false;
+    if(c.dls){var d=parseDate(c.dls);if(d&&d>parseDate(t))return false;}
+    return true;
+  }).sort(function(a,b){
+    if(a.ord!==undefined&&b.ord!==undefined)return a.ord-b.ord;
+    var da=parseDate(a.dls||a.dc),db=parseDate(b.dls||b.dc);
+    if(da&&db)return da-db;
+    return 0;
   });
-  if(cur.length)cirs.push(cur);
-  return cirs;
-}
-// Nearest-neighbor optimization
-function optimizeStops(stops){
-  if(stops.length<=2)return stops;
-  var depot=[36.685984,2.89];
-  var withC=[],withoutC=[];
-  stops.forEach(function(s){var co=getCoords(s);if(co)withC.push({s:s,co:co});else withoutC.push(s);});
-  if(withC.length<=1)return stops;
-  var result=[],remaining=withC.slice(),cur=depot;
-  while(remaining.length>0){
-    var best=0,bestD=Infinity;
-    remaining.forEach(function(x,i){
-      var d=Math.pow(x.co[0]-cur[0],2)+Math.pow(x.co[1]-cur[1],2);
-      if(d<bestD){bestD=d;best=i;}
-    });
-    result.push(remaining[best].s);
-    cur=remaining[best].co;
-    remaining.splice(best,1);
-  }
-  return result.concat(withoutC);
-}
-function openMaps(stops){
-  if(!stops.length)return;
-  var optimized=optimizeStops(stops);
-  var url="https://www.google.com/maps/dir/"+encodeURIComponent(DEPOT_ADDR);
-  optimized.slice(0,23).forEach(function(c){url+="/"+encodeURIComponent(c.a+", "+c.c+", "+c.w+", Algerie");});
-  url+="/"+encodeURIComponent(DEPOT_ADDR);
-  window.open(url,"_blank");
 }
 
 // ═══ EVENT DELEGATION ════════════════════════════
@@ -585,6 +565,7 @@ document.addEventListener("click",function(e){
   else if(a==="copy")copyLink(t.dataset.url);
   else if(a==="ocl")openClientForm(id||null);
   else if(a==="dcl")delClient(id);
+  else if(a==="del-cmd")delCmd(id);
   else if(a==="olv")openLivForm(id||null);
   else if(a==="dlv")delLiv(id);
   else if(a==="sed")saveEdit(t.dataset.eid);
@@ -630,6 +611,8 @@ function detectMode(){
 
 // ═══ RENDER ══════════════════════════════════════
 function render(){
+  // Safety: normalize all statuses before render
+  CMDS.forEach(function(c){c.s=normStatut(c.s);});
   var root=document.getElementById("root");
   if(MODE==="login"){root.innerHTML=rnLogin();return;}
   if(MODE==="livreur"){root.innerHTML=rnLiv();return;}
@@ -704,65 +687,116 @@ function saveFbConfig(){
 
 // ═══ DASHBOARD ════════════════════════════════════
 function pgDB(){
-  var tc=CMDS.filter(function(c){return c.dc===td();});
-  var lv=CMDS.filter(function(c){return c.s==="Livree"||c.s==="Annulee";}).sort(function(a,b){
-    var da=parseDate(a.dl||a.dc), db=parseDate(b.dl||b.dc);
-    if(da&&db)return db-da;
-    return 0;
+  var today=td();
+  var allToday=CMDS.filter(function(c){
+    return (c.dc===today||c.dls===today)&&c.lid;
   });
-  var livrees=lv.filter(function(c){return c.s==="Livree";});
-  var annulees=lv.filter(function(c){return c.s==="Annulee";});
-  var at=tc.filter(function(c){return c.s==="A programmer"||c.s==="Programmee";});
-  var tq=tc.reduce(function(s,c){return s+(+c.q||0);},0);
+  var livrees=allToday.filter(function(c){return c.s==="Livree";});
+  var annulees=allToday.filter(function(c){return c.s==="Annulee";});
+  var actives=allToday.filter(function(c){return c.s!=="Livree"&&c.s!=="Annulee";});
+  var tq=allToday.reduce(function(s,c){return s+(+c.q||0);},0);
   var lq=livrees.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
-  var vt=tc.reduce(function(s,c){return s+(+c.vi||0);},0);
-  var h='<div class="shd"><b style="color:var(--b)">Dashboard — '+new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b>'
+  var vt=livrees.reduce(function(s,c){return s+(+c.vi||0);},0);
+  var pct=allToday.length?Math.round(livrees.length/allToday.length*100):0;
+
+  var h='<div class="shd"><b style="color:var(--b)">Dashboard — '+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</b>'
     +'<button class="btn btnp bsm" data-a="new-cmd">+ Commande</button></div>';
-  if(!FB_URL) h+='<div class="al al-r" style="font-size:12px">⚠ Firebase non configure — les livreurs ne voient pas les commandes. <span style="cursor:pointer;text-decoration:underline;font-weight:700" data-a="fbc">Configurer</span></div>';
-  h+='<div class="g4">'
-    +'<div class="kc"><div class="ka" style="background:var(--b)"></div><div class="kl">Commandees</div><div class="kv" style="color:var(--b)">'+tq+'</div><div style="font-size:10px;color:var(--mut)">'+tc.length+' cmd</div></div>'
-    +'<div class="kc"><div class="ka" style="background:var(--g)"></div><div class="kl">Livrees</div><div class="kv" style="color:var(--gd)">'+lq+'</div></div>'
-    +'<div class="kc"><div class="ka" style="background:#854F0B"></div><div class="kl">Vides recup.</div><div class="kv" style="color:#854F0B">'+vt+'</div></div>'
-    +'<div class="kc"><div class="ka" style="background:#E5007D"></div><div class="kl">En attente</div><div class="kv" style="color:#E5007D">'+at.length+'</div></div>'
-    +'</div>';
-  if(lv.length===tc.length&&tc.length>0) h+='<div class="al al-ok">Toutes les livraisons terminees !</div>';
-  h+='<div class="shd" style="margin-top:.5rem"><b style="color:var(--b)">Livreurs du jour</b><button class="btn bsm" data-a="tab" data-tab="aff">Affectation</button></div>';
+
+  if(!FB_URL) h+='<div class="al al-r" style="font-size:12px">⚠ Firebase non configure</div>';
+
+  // ── Barre de progression globale ──────────────────────────────
+  h+='<div class="card" style="margin-bottom:.75rem">';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+  h+='<span style="font-size:13px;font-weight:700;color:var(--b)">Avancement du jour</span>';
+  h+='<span style="font-size:20px;font-weight:900;color:'+(pct===100?'#4CAF50':'var(--b)')+'">'+pct+'%</span>';
+  h+='</div>';
+  h+='<div style="height:8px;background:var(--gray);border-radius:4px;overflow:hidden;margin-bottom:10px">';
+  h+='<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#3D3DB5,#E5007D);border-radius:4px;transition:width .5s"></div>';
+  h+='</div>';
+  // KPIs
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
+  h+='<div style="background:var(--bl);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">Commandées</div><div style="font-size:22px;font-weight:900;color:var(--b)">'+tq+'</div></div>';
+  h+='<div style="background:var(--gl);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">Livrées</div><div style="font-size:22px;font-weight:900;color:#2E7D32">'+lq+'</div></div>';
+  h+='<div style="background:#FFF8E1;border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">Vides</div><div style="font-size:22px;font-weight:900;color:#854F0B">'+vt+'</div></div>';
+  h+='<div style="background:#FFEBEE;border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--mut)">En attente</div><div style="font-size:22px;font-weight:900;color:#C62828">'+actives.length+'</div></div>';
+  h+='</div></div>';
+
+  if(pct===100&&allToday.length>0) h+='<div class="al al-ok">🎉 Toutes les livraisons du jour sont terminées !</div>';
+
+  // ── Par livreur ────────────────────────────────────────────────
+  h+='<div class="card"><div style="font-size:13px;font-weight:700;color:var(--b);margin-bottom:10px">Circuits du jour</div>';
   var any=false;
   LV.forEach(function(l,i){
-    var cs=livCmds(l.id);if(!cs.length)return;any=true;
+    var cs=livCmdsActive(l.id);
+    var csLiv=CMDS.filter(function(c){return c.lid===l.id&&c.s==="Livree"&&(c.dc===today||c.dls===today);});
+    var total=cs.length+csLiv.length;
+    if(!total)return;
+    any=true;
+    var col=DC[i%DC.length];
     var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
-    var pct=Math.min(100,Math.round(u/l.cap*100));
-    var col=DC[i%DC.length],bc=pct>90?"#E53935":pct>70?"#FB8C00":"#72B81E";
-    var llv=cs.filter(function(c){return c.s==="Livree";});
+    var uLiv=csLiv.reduce(function(s,c){return s+(+c.qr||+c.q||0);},0);
+    var pctL=total?Math.round(csLiv.length/total*100):0;
     var cirs=getCircuits(l.id);
-    h+='<div class="card" style="margin-bottom:.5rem">'
-      +'<div style="display:flex;align-items:center;gap:9px">'
-      +'<div style="width:38px;height:38px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:white;flex-shrink:0">'+ini(l.n)+'</div>'
-      +'<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+'</div>'
-      +'<div style="font-size:11px;color:var(--mut)">'+u+'/'+l.cap+' bonb. &mdash; '+(cirs.length>1?'<b style="color:#E5007D">'+cirs.length+' circuits</b>':pct+'%')+'</div>'
-      +'<div style="height:4px;background:var(--gray);border-radius:2px;margin-top:4px;overflow:hidden"><div style="height:100%;background:'+bc+';width:'+pct+'%"></div></div></div>'
-      +'<div style="text-align:right"><div style="font-size:22px;font-weight:800;color:'+col+'">'+llv.length+'/'+cs.length+'</div><div style="font-size:10px;color:var(--mut)">livrees</div></div></div>';
-    if(cirs.length>0){
-      h+='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">';
-      cirs.forEach(function(cir,ci){
-        h+='<button class="cirb" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">'
-          +'<span style="background:'+col+';color:white;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">'+(ci+1)+'</span>'
-          +'Circuit opt.'+(ci+1)+' &mdash; '+cir.length+' arr. &mdash; '+cir.reduce(function(s,c){return s+(+c.q||0);},0)+' bonb.'
-          +'<span style="color:var(--mut);font-size:10px;margin-left:4px">'+cir.map(function(x){return x.cn.substring(0,5);}).join(' · ')+'</span>'
-          +'</button>';
-      });
+
+    h+='<div style="border:1px solid var(--bdr);border-radius:10px;margin-bottom:10px;overflow:hidden">';
+    // Livreur header
+    h+='<div style="display:flex;align-items:center;gap:9px;padding:10px 12px;background:'+col+'12;border-bottom:1px solid var(--bdr)">';
+    h+='<div style="width:36px;height:36px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:white;flex-shrink:0">'+ini(l.n)+'</div>';
+    h+='<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+'</div>';
+    h+='<div style="height:4px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;width:'+pctL+'%;background:'+col+';border-radius:2px"></div></div>';
+    h+='<div style="font-size:10px;color:var(--mut);margin-top:2px">'+csLiv.length+'/'+total+' livrés &mdash; '+(cirs.length>1?cirs.length+' circuits':'1 circuit')+'</div>';
+    h+='</div>';
+    h+='<div style="text-align:right"><div style="font-size:22px;font-weight:900;color:'+col+'">'+csLiv.length+'</div><div style="font-size:10px;color:var(--mut)">/ '+total+'</div></div>';
+    h+='</div>';
+
+    // Circuit stops - mirror of affectation
+    if(cs.length+csLiv.length>0){
+      h+='<div style="padding:8px 12px">';
+      // Active stops
+      if(cs.length){
+        h+='<div style="font-size:10px;font-weight:700;color:var(--mut);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">En cours ('+cs.length+')</div>';
+        cs.forEach(function(c,si){
+          h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#FFF8EC;border-radius:7px;margin-bottom:3px">';
+          h+='<div style="width:18px;height:18px;border-radius:50%;background:#FB8C00;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(si+1)+'</div>';
+          h+='<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.cn+'</div>';
+          h+='<div style="font-size:10px;color:var(--mut)">'+c.c+'</div></div>';
+          h+='<div style="font-size:11px;font-weight:700;color:#FB8C00">'+c.q+' bonb.</div>';
+          if(c.pri==="Critique") h+='<div style="background:#FFEBEE;color:#C62828;padding:1px 5px;border-radius:10px;font-size:9px;font-weight:700">!</div>';
+          h+='</div>';
+        });
+      }
+      // Delivered stops
+      if(csLiv.length){
+        h+='<div style="font-size:10px;font-weight:700;color:var(--mut);margin:6px 0 5px;text-transform:uppercase;letter-spacing:.5px">Livrés ('+csLiv.length+')</div>';
+        csLiv.forEach(function(c,si){
+          h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#F1FFF1;border-radius:7px;margin-bottom:3px">';
+          h+='<div style="width:18px;height:18px;border-radius:50%;background:#4CAF50;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">✓</div>';
+          h+='<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.cn+'</div>';
+          h+='<div style="font-size:10px;color:var(--mut)">'+c.c+'</div></div>';
+          h+='<div style="font-size:11px;font-weight:700;color:#2E7D32">'+(c.qr||c.q)+' bonb.</div>';
+          if(c.bl) h+='<div style="background:#E8F5E9;color:#2E7D32;padding:1px 5px;border-radius:10px;font-size:9px">'+c.bl+'</div>';
+          h+='</div>';
+        });
+      }
+      // Circuit route buttons
+      if(cirs.length){
+        h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">';
+        cirs.forEach(function(cir,ci){
+          h+='<button class="btn bsm btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">🗺 Circuit '+(ci+1)+' — '+cir.reduce(function(s,c){return s+(+c.q||0);},0)+' bonb.</button>';
+        });
+        h+='</div>';
+      }
       h+='</div>';
     }
-    // Metro circuit view
-    h+=renderMetroCircuit(cirs,col,l);
     h+='</div>';
   });
-  if(!any) h+='<div class="em">Aucune livraison affectee</div>';
+  if(!any) h+='<div class="em">Aucune livraison affectee ce jour</div>';
+  h+='</div>';
   return h;
 }
 
 function pgCMD(){
-  var tc=CMDS.filter(function(c){return c.s!=="Livree"||c.dc===td();});
+  var tc=CMDS.filter(function(c){return c.s!=="Livree"&&c.s!=="Annulee";});
   tc.sort(function(a,b){
     // Future commands at bottom
     var af=a.dls&&parseDate(a.dls)>parseDate(td())?1:0;
@@ -771,7 +805,18 @@ function pgCMD(){
     var po={"Critique":0,"Importante":1,"Normale":2};
     return (po[a.pri||"Normale"]||0)-(po[b.pri||"Normale"]||0);
   });
-  var h='<div class="shd"><b style="color:var(--b)">Commandes du jour</b><button class="btn btnp" data-a="new-cmd">+ Nouvelle</button></div>';
+  var totalQ=tc.reduce(function(s,c){return s+(+c.q||0);},0);
+  var h='<div class="shd"><b style="color:var(--b)">Commandes</b><button class="btn btnp" data-a="new-cmd">+ Commande</button></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:10px">'
+    +'<div style="background:var(--bl);border-radius:8px;padding:7px 16px;display:flex;align-items:center;gap:8px">'
+    +'<span style="font-size:24px;font-weight:900;color:var(--b)">'+tc.length+'</span>'
+    +'<span style="font-size:11px;color:var(--mut)">clients</span>'
+    +'</div>'
+    +'<div style="background:var(--gl);border-radius:8px;padding:7px 16px;display:flex;align-items:center;gap:8px">'
+    +'<span style="font-size:24px;font-weight:900;color:#2E7D32">'+totalQ+'</span>'
+    +'<span style="font-size:11px;color:var(--mut)">bonbonnes</span>'
+    +'</div>'
+    +'</div>';
   if(!tc.length) return h+'<div class="em">Aucune commande.</div>';
   tc.sort(function(a,b){var po={"Critique":0,"Importante":1,"Normale":2};return (po[a.pri||"Normale"]||0)-(po[b.pri||"Normale"]||0);});
   tc.forEach(function(c){
@@ -787,7 +832,7 @@ function pgCMD(){
       +'<div style="font-size:11px">'+(c.lid?'<span style="color:'+lcolor(c.lid)+';font-weight:700">'+lname(c.lid)+'</span>':'<span style="color:#E53935">—</span>')+'</div>'
       +stTag(c.s||"A programmer")+priTag(c.pri||"Normale")
       +'<button class="btn bxs" data-a="edit-cmd" data-id="'+c.id+'">Edit</button>'
-      +'<button data-a="del-cmd" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;background:white;color:#C62828">🗑</button>'
+      +'<button onclick="delCmd(this.dataset.id)" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;background:white;color:#C62828">🗑</button>'
       +'</div>';
   });
   return h;
@@ -796,7 +841,7 @@ function pgCMD(){
 function pgAFF(){
   var today2=parseDate(td());
 
-  // Commandes affectables : dls <= aujourd'hui OU pas de dls
+  // Commandes affectables : dls <= today OU pas de dls
   var na=CMDS.filter(function(c){
     if(c.lid||c.s==="Annulee"||c.s==="Livree")return false;
     var d=c.dls?parseDate(c.dls):null;
@@ -995,10 +1040,6 @@ function pgBIL(){
   +'<button class="btn bsm" style="background:#0F9D58;color:white;border-color:#0F9D58" onclick="openGasConfig()">📊 Sheets</button>'
   +'<button class="btn bsm" style="background:#C62828;color:white;border-color:#C62828" onclick="clearAll()">🗑 Tout effacer</button>'
   +'</div></div>'
-  +'<div style="display:flex;gap:6px">'
-  +'<button class="btn btng bsm" onclick="exportCSV()">⬇ CSV / Excel</button>'
-  +'<button class="btn bsm" style="background:#0F9D58;color:white;border-color:#0F9D58" onclick="openGasConfig()">📊 Google Sheets</button>'
-  +'</div></div>';
   h+='<div class="g4">'
     +'<div class="kc"><div class="ka" style="background:var(--b)"></div><div class="kl">Commandees</div><div class="kv" style="color:var(--b)">'+tq+'</div></div>'
     +'<div class="kc"><div class="ka" style="background:var(--g)"></div><div class="kl">Livrees</div><div class="kv" style="color:var(--gd)">'+lq+'</div></div>'
@@ -1035,6 +1076,7 @@ function pgBIL(){
         +(c.bl?'<span class="tag" style="background:#FFE8F4;color:#E5007D">'+c.bl+'</span>':'')
         +(c.obs?'<span class="tag" style="background:#FFF8E1;color:#F57F17">💬 '+c.obs+'</span>':'')
         +'<span style="font-size:10px;color:'+col+';font-weight:700">'+lname(c.lid)+'</span>'
+        +'<button onclick="delCmd(this.dataset.id)" data-id="'+c.id+'" style="padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;background:white;color:#C62828">🗑</button>'
         +'</div>';
     });
     h+='</div>';
@@ -1045,7 +1087,7 @@ function pgBIL(){
 // ═══ LIVREUR APP ═════════════════════════════════
 function rnLiv(){
   var l=LV.find(function(x){return x.id===LIV_ID;})||LV[0];
-  var cs=livCmds(l.id);
+  var cs=livCmdsActive(l.id);
   var lv=cs.filter(function(c){return c.s==="Livree";});
   var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
   var pct=cs.length?Math.round(lv.length/cs.length*100):0;
@@ -1646,95 +1688,6 @@ function pgPLAN(){
   return h;
 }
 
-function renderMetroCircuit(cirs,col,livreur){
-  if(!cirs||!cirs.length)return '<div style="padding:8px;color:#aaa;font-size:12px;text-align:center">Aucune livraison</div>';
-  var html='';
-  cirs.forEach(function(cir,ci){
-    if(!cir||!cir.length)return;
-    var cload=cir.reduce(function(s,c){return s+(+c.q||0);},0);
-    var cliv=cir.filter(function(c){return c.s==="Livree";});
-    var pct=Math.min(100,Math.round(cload/(livreur.cap||100)*100));
-
-    if(ci>0){
-      html+='<div style="text-align:center;padding:4px 0;font-size:11px;color:'+col+';font-weight:700">&#8617; Rechargement depot — Circuit '+(ci+1)+' ('+cload+' bonb.)</div>';
-    }
-
-    html+='<div style="background:white;border:1px solid #E0E0E0;border-radius:10px;margin-bottom:8px;padding:10px 12px">';
-
-    // Header
-    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-      +'<div style="width:22px;height:22px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">'+(ci+1)+'</div>'
-      +'<div style="font-size:12px;font-weight:700;color:#333">Circuit '+(ci+1)+' &mdash; '+cir.length+' arrets &mdash; '+cload+'/'+livreur.cap+' bonb.</div>'
-      +'<div style="margin-left:auto;font-size:11px;font-weight:700;color:'+(cliv.length===cir.length?'#4CAF50':'#E53935')+'">'+cliv.length+'/'+cir.length+' livres</div>'
-      +'</div>';
-
-    // Progress bar
-    html+='<div style="height:3px;background:#F0F0F0;border-radius:2px;margin-bottom:10px">'
-      +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px"></div>'
-      +'</div>';
-
-    // Horizontal metro line
-    // Build all stops: D + clients + D
-    var stops=[{type:'D',label:'Depot'}];
-    cir.forEach(function(c,si){stops.push({type:'C',idx:si+1,cmd:c});});
-    stops.push({type:'D',label:'Depot'});
-
-    // Scrollable horizontal container
-    html+='<div style="overflow-x:auto;padding-bottom:4px">';
-    html+='<div style="display:flex;align-items:flex-start;min-width:max-content;gap:0">';
-
-    stops.forEach(function(stop,si){
-      var isLast=(si===stops.length-1);
-      var dotColor=stop.type==='D'?'#1A1A3E':(stop.cmd.s==='Livree'?'#4CAF50':'#E53935');
-      var dotBorder=stop.type==='D'?'#1A1A3E':(stop.cmd.s==='Livree'?'#4CAF50':'#E53935');
-
-      html+='<div style="display:flex;flex-direction:column;align-items:center;width:80px;flex-shrink:0">';
-      
-      // Dot + line row
-      html+='<div style="display:flex;align-items:center;width:100%;height:26px">';
-      // Left line
-      if(si>0){
-        var prevLiv=(stops[si-1].type==='C'&&stops[si-1].cmd.s==='Livree')||stops[si-1].type==='D';
-        html+='<div style="flex:1;height:3px;background:'+(stop.type==='D'||prevLiv?'#4CAF50':col)+'"></div>';
-      } else {
-        html+='<div style="flex:1"></div>';
-      }
-      // Dot
-      html+='<div style="width:26px;height:26px;border-radius:50%;background:'+dotColor+';border:2.5px solid white;box-shadow:0 0 0 2px '+dotBorder+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0">';
-      html+=stop.type==='D'?'D':(stop.cmd.s==='Livree'?'&#10003;':stop.idx);
-      html+='</div>';
-      // Right line
-      if(!isLast){
-        var nextStop=stops[si+1];
-        var nextLiv=(stop.type==='C'&&stop.cmd.s==='Livree')||stop.type==='D';
-        html+='<div style="flex:1;height:3px;background:'+(nextLiv?'#4CAF50':col)+'"></div>';
-      } else {
-        html+='<div style="flex:1"></div>';
-      }
-      html+='</div>'; // end dot row
-
-      // Label below dot
-      html+='<div style="text-align:center;padding:4px 2px 0;width:100%">';
-      if(stop.type==='D'){
-        html+='<div style="font-size:9px;font-weight:700;color:#1A1A3E">Depot</div>';
-      } else {
-        var c=stop.cmd;
-        var isLiv=c.s==='Livree';
-        html+='<div style="font-size:9px;font-weight:700;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:76px" title="'+c.cn+'">'+c.cn.substring(0,10)+(c.cn.length>10?'..':'')+'</div>';
-        html+='<div style="font-size:9px;color:#aaa">'+c.q+' bonb.</div>';
-        if(isLiv) html+='<div style="font-size:9px;color:#2E7D32;font-weight:700">'+(c.bl?c.bl:'Livre')+'</div>';
-        else html+='<div style="font-size:9px;color:#C62828">En attente</div>';
-      }
-      html+='</div>';
-      html+='</div>'; // end stop
-    });
-
-    html+='</div>'; // end flex
-    html+='</div>'; // end scroll
-    html+='</div>'; // end circuit card
-  });
-  return html;
-}
 
 function delCmd(id){
   if(!confirm("Supprimer cette commande ?"))return;
