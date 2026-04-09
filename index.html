@@ -760,82 +760,99 @@ function pgCMD(){
 }
 
 function pgAFF(){
-  var tc=CMDS.filter(function(c){return c.dc===td()&&c.s!="Annulee";});
-  var na=tc.filter(function(c){return !c.lid;});
-  var h='<div class="shd"><b style="color:var(--b)">Affectation</b></div>';
-  if(na.length){
-    var byC={};
-    na.forEach(function(c){var k=c.c||c.w;if(!byC[k])byC[k]=[];byC[k].push(c);});
-    var communes=Object.keys(byC).sort(function(a,b){
-      return byC[b].reduce(function(s,c){return s+(+c.q||0);},0)-byC[a].reduce(function(s,c){return s+(+c.q||0);},0);
+  // Show ALL non-delivered, non-cancelled commands grouped by commune
+  var all=CMDS.filter(function(c){return c.s!=="Annulee"&&c.s!=="Livree";});
+  var h='<div class="shd"><b style="color:var(--b)">Affectation ('+all.length+' commandes)</b></div>';
+  if(!all.length){return h+'<div class="em">Aucune commande active</div>';}
+
+  // Group by commune
+  var byC={};
+  all.forEach(function(c){var k=c.c||c.w||"Autre";if(!byC[k])byC[k]=[];byC[k].push(c);});
+
+  // Sort communes: most bonbonnes first
+  var communes=Object.keys(byC).sort(function(a,b){
+    return byC[b].reduce(function(s,c){return s+(+c.q||0);},0)
+          -byC[a].reduce(function(s,c){return s+(+c.q||0);},0);
+  });
+
+  communes.forEach(function(com){
+    var cs=byC[com];
+    var tot=cs.reduce(function(s,c){return s+(+c.q||0);},0);
+    var unassigned=cs.filter(function(c){return !c.lid;}).length;
+
+    // Livreur select for "assign all"
+    var lo="<option value=''>Choisir livreur...</option>";
+    LV.forEach(function(l){
+      var d=l.cap-capUsed(l.id);
+      lo+='<option value="'+l.id+'"'+(d<tot?' style="color:#aaa"':'')+'>'+l.n+' ('+d+' dispo)</option>';
     });
-    h+='<div class="al al-i" style="font-size:12px">📍 Groupees par commune — Affectez zone par zone pour optimiser les circuits.</div>';
-    communes.forEach(function(com){
-      var cs=byC[com];
-      var tot=cs.reduce(function(s,c){return s+(+c.q||0);},0);
-      var lo="<option value=''>Choisir livreur...</option>";
-      LV.forEach(function(l){
-        var d=l.cap-capUsed(l.id);
-        lo+='<option value="'+l.id+'"'+(d<tot?' style="color:#aaa"':'')+'>'+l.n+' ('+d+' dispo)</option>';
-      });
-      var gid="sel-"+com.replace(/[^a-zA-Z0-9]/g,"_");
-      h+='<div class="cgrp">'
-        +'<div class="cgrp-hd"><span>📍</span><span style="font-weight:700;flex:1">'+com+'</span>'
-        +'<span class="tag tag-ap">'+cs.length+' cmd &mdash; '+tot+' bonb.</span></div>'
-        +'<div class="cgrp-bd">'
-        +'<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">'
-        +'<select id="'+gid+'" style="flex:1;font-size:12px;padding:6px">'+lo+'</select>'
-        +'<button class="btn btng bsm" data-a="afc" data-grp="'+com+'">Affecter tout</button></div>';
-      cs.forEach(function(c){
-        var isFuture=c.dls&&parseDate(c.dls)>parseDate(td());
-        var lo2="<option value=''>— livreur —</option>";
-        LV.forEach(function(l){lo2+='<option value="'+l.id+'"'+(l.id===c.lid?' selected':'')+'>'+l.n+'</option>';});
-        h+='<div class="or" style="margin-bottom:4px;'+(isFuture?'background:#F0F4FF;opacity:.75':'')+'">'
-          +'<div style="font-weight:600;font-size:12px;flex:1">'+c.cn+'</div>'
-          +'<div style="font-size:10px;color:var(--mut)">'+c.a.substring(0,35)+'</div>'
-          +'<b style="color:var(--gd)">'+c.q+'</b>'+priTag(c.pri||"Normale");
-        if(isFuture){
-          h+='<span class="tag tag-pr" style="font-size:10px">📅 '+c.dls+'</span>';
-        }
-        h+='<select data-a="aff" data-id="'+c.id+'" style="width:100px;font-size:11px;padding:3px">'+lo2+'</select>';
-        h+='</div>';
-      });
-      h+='</div></div>';
+    var gid="sel-"+com.replace(/[^a-zA-Z0-9]/g,"_");
+
+    h+='<div class="cgrp">'
+      +'<div class="cgrp-hd">'
+      +'<span>📍</span>'
+      +'<span style="font-weight:700;flex:1">'+com+'</span>'
+      +(unassigned>0?'<span class="tag" style="background:#FFEBEE;color:#C62828">'+unassigned+' non affectees</span>':'')
+      +'<span class="tag tag-ap" style="margin-left:4px">'+cs.length+' cmd — '+tot+' bonb.</span>'
+      +'</div>'
+      +'<div class="cgrp-bd">'
+      +'<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">'
+      +'<select id="'+gid+'" style="flex:1;font-size:12px;padding:6px">'+lo+'</select>'
+      +'<button class="btn btng bsm" data-a="afc" data-grp="'+com+'">Affecter tout</button>'
+      +'</div>';
+
+    cs.forEach(function(c){
+      var isFuture=c.dls&&parseDate(c.dls)>parseDate(td());
+      var isLate=!c.dls&&c.dc!==td()&&parseDate(c.dc)<parseDate(td());
+      var rowStyle="margin-bottom:4px;"
+        +(isFuture?"border-color:#3D3DB5;background:#F0F4FF;":"")
+        +(isLate?"border-color:#E53935;":"")
+        +(!c.lid?"border-left:3px solid #E53935;":"border-left:3px solid #72B81E;");
+
+      var lo2="<option value=''>— non affecte —</option>";
+      LV.forEach(function(l){lo2+='<option value="'+l.id+'"'+(l.id===c.lid?' selected':'')+'>'+l.n+'</option>';});
+
+      h+='<div class="or" style="'+rowStyle+'">'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-weight:600;font-size:12px">'+c.cn
+        +(isFuture?' <span style="font-size:10px;color:#3D3DB5">📅 '+c.dls+'</span>':'')
+        +(isLate?' <span style="font-size:10px;color:#E53935">⚠ En retard</span>':'')
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--mut)">'+c.a.substring(0,40)+'</div>'
+        +'</div>'
+        +'<b style="color:var(--gd);flex-shrink:0">'+c.q+'</b>'
+        +priTag(c.pri||"Normale")
+        +stTag(c.s||"A programmer")
+        +'<select data-a="aff" data-id="'+c.id+'" style="width:110px;font-size:11px;padding:3px;flex-shrink:0">'+lo2+'</select>'
+        +'</div>';
     });
-  }else{
-    h+='<div class="al al-ok">Toutes les commandes sont affectees !</div>';
-  }
+
+    h+='</div></div>';
+  });
+
+  // Capacity view per livreur
+  h+='<div style="margin-top:1rem"><b style="color:var(--b);display:block;margin-bottom:.5rem">Capacite des livreurs</b>';
   LV.forEach(function(l,i){
     var cs=livCmds(l.id);
     var u=cs.reduce(function(s,c){return s+(+c.q||0);},0);
     var pct=Math.min(100,Math.round(u/l.cap*100));
     var col=DC[i%DC.length],bc=pct>90?"#E53935":pct>70?"#FB8C00":col;
     var cirs=getCircuits(l.id);
-    h+='<div class="card"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">'
-      +'<div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white">'+ini(l.n)+'</div>'
-      +'<div style="flex:1"><div style="font-weight:700;color:'+col+'">'+l.n+' &mdash; '+l.v+'</div>'
-      +'<div style="font-size:11px;color:var(--mut)">'+u+'/'+l.cap+' bonb. &mdash; '+(cirs.length>1?'<b style="color:#E5007D">'+cirs.length+' circuits</b>':'1 circuit')+'</div>'
-      +'<div style="height:3px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;background:'+bc+';width:'+pct+'%"></div></div></div>';
+    h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 11px;background:white;border:1px solid var(--bdr);border-radius:9px;margin-bottom:5px">'
+      +'<div style="width:30px;height:30px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;flex-shrink:0">'+ini(l.n)+'</div>'
+      +'<div style="flex:1"><div style="font-weight:700;font-size:12px;color:'+col+'">'+l.n+'</div>'
+      +'<div style="height:4px;background:var(--gray);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;background:'+bc+';width:'+pct+'%"></div></div></div>'
+      +'<div style="font-size:11px;color:var(--mut);text-align:right">'+u+'/'+l.cap+' bonb.<br>'+(cirs.length>1?'<b style="color:#E5007D">'+cirs.length+' circuits</b>':'1 circuit')+'</div>';
     if(cs.length){
-      h+='<div style="display:flex;flex-direction:column;gap:3px">';
+      h+='<div style="display:flex;gap:3px">';
       cirs.forEach(function(cir,ci){
-        h+='<button class="btn bsm" style="background:'+col+'22;color:'+col+';border-color:'+col+'66" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">🗺 Circuit '+(ci+1)+' &mdash; '+cir.reduce(function(s,c){return s+(+c.q||0);},0)+' bonb.</button>';
+        h+='<button class="btn bxs btno" data-a="cir" data-id="'+l.id+'" data-ci="'+ci+'">🗺'+(ci+1)+'</button>';
       });
       h+='</div>';
     }
     h+='</div>';
-    cs.forEach(function(c,ci){
-      h+='<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--gray);border-radius:7px;margin-bottom:3px;font-size:12px">'
-        +'<span style="background:'+col+';color:white;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">'+(ci+1)+'</span>'
-        +'<span style="flex:1;font-weight:600">'+c.cn+'</span><span style="color:var(--mut);font-size:10px">'+c.c+'</span>'
-        +'<b style="color:var(--gd)">'+c.q+'</b>'+stTag(c.s||"A programmer")
-        +'<button data-a="mup" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 6px;font-size:13px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white" title="Monter">↑</button>'
-        +'<button data-a="mdn" data-id="'+c.id+'" data-lid="'+l.id+'" style="padding:2px 6px;font-size:13px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white" title="Descendre">↓</button>'
-        +'<button data-a="unaff" data-id="'+c.id+'" style="padding:2px 7px;font-size:11px;border:1px solid var(--bdr);border-radius:6px;cursor:pointer;background:white">x</button></div>';
-    });
-    if(!cs.length)h+='<div style="font-size:12px;color:var(--mut);text-align:center;padding:5px">Aucune commande</div>';
-    h+='</div>';
   });
+  h+='</div>';
   return h;
 }
 
