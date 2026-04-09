@@ -1701,6 +1701,28 @@ function clearAll(){
   fbSave(render);
   alert("Toutes les commandes ont été supprimées.");
 }
+
+function stTag(s){
+  var map={
+    "Livree":["#E8F5E9","#2E7D32","Livre"],
+    "Annulee":["#F5F5F5","#757575","Annule"],
+    "En cours":["#E3F2FD","#1565C0","En cours"],
+    "Programmee":["#EBEBFF","#3D3DB5","Programme"],
+    "A programmer":["#FFF8E1","#F57F17","A programmer"],
+    "Retardee":["#FFF3E0","#E65100","Retarde"]
+  };
+  var v=map[s]||["#F5F5F5","#666",s||""];
+  return '<span style="background:'+v[0]+';color:'+v[1]+';padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap">'+v[2]+'</span>';
+}
+function priTag(p){
+  var map={
+    "Critique":["#FFEBEE","#C62828","Critique"],
+    "Importante":["#FFF3E0","#E65100","Importante"],
+    "Normale":["#F5F5F5","#757575","Normale"]
+  };
+  var v=map[p]||map["Normale"];
+  return '<span style="background:'+v[0]+';color:'+v[1]+';padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">'+v[2]+'</span>';
+}
 // ═══ INIT ════════════════════════════════════════
 ld();detectMode();
 if(FB_URL){
